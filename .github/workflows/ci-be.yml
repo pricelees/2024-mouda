@@ -1,9 +1,9 @@
-name: ci-dev
+name: backend-integration
 
 on:
-  pull_request:
+  push:
     branches:
-      - develop-backend
+      - test
 
 jobs:
   build:
@@ -38,5 +38,5 @@ jobs:
 
       - name: 도커 이미지 빌드 및 푸시
         run: |
-          docker buildx build ./ --platform=linux/arm64 -t 2024mouda/mouda-be:latest
-          docker push 2024mouda/mouda-be:latest
+          docker buildx build ./ --platform=linux/arm64 -t ${{ secrets.DOCKER_USERNAME }}/mouda-be:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/mouda-be:latest
