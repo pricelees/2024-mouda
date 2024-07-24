@@ -3,7 +3,7 @@ name: backend-deploy
 on:
   push:
     branches:
-      - test
+      - test-deploy
 
 jobs:
   deploy:
