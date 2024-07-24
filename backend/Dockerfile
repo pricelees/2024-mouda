@@ -1,7 +1,6 @@
 FROM amazoncorretto:17.0.12
 
-ARG JAR_FILE=./build/libs/backend-0.0.1-SNAPSHOT.jar
-
+ARG JAR_FILE
 COPY ${JAR_FILE} /app.jar
 
 EXPOSE 8080
