@@ -31,7 +31,6 @@ const createQueryClient = () => {
 };
 
 const handleApiError = (error: Error) => {
-  Sentry.captureException(error);
   console.log(error);
   if (error instanceof ApiError) {
     if (error.status === 401) {
