@@ -10,8 +10,8 @@ spring:
     show-sql: false
 
 url:
-  base: https://mouda.site
+  base: https://be-sangdol.store
 
 oauth:
   kakao:
-    redirect-uri: https://mouda.site/kakao-o-auth
+    redirect-uri: https://be-sangdol.store/kakao-o-auth
