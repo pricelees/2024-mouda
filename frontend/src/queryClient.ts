@@ -1,5 +1,3 @@
-import * as Sentry from '@sentry/react';
-
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 
 import { ApiError } from '@_utils/customError/ApiError';
