@@ -14,7 +14,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,9 +44,6 @@ public class Moim {
 	private LocalTime time;
 
 	private String place;
-
-	@Transient
-	private int currentPeople;
 
 	@Column(nullable = false)
 	private int maxPeople;
@@ -81,7 +77,6 @@ public class Moim {
 		this.date = date;
 		this.time = time;
 		this.place = place;
-		this.currentPeople = 0;
 		this.maxPeople = maxPeople;
 		this.description = description;
 		this.moimStatus = MoimStatus.MOIMING;
@@ -136,7 +131,7 @@ public class Moim {
 	}
 
 	public void update(String title, LocalDate date, LocalTime time, String place, int maxPeople,
-		String description) {
+		String description, int currentPeople) {
 		if (!Objects.equals(this.title, title)) {
 			validateTitle(title);
 			this.title = title;
@@ -159,7 +154,7 @@ public class Moim {
 
 		if (!Objects.equals(this.maxPeople, maxPeople)) {
 			validateMaxPeople(maxPeople);
-			validateMaxPeopleIsUpperThanCurrentPeople(maxPeople);
+			validateMaxPeopleIsUpperThanCurrentPeople(maxPeople, currentPeople);
 			this.maxPeople = maxPeople;
 		}
 
@@ -169,7 +164,7 @@ public class Moim {
 		}
 	}
 
-	private void validateMaxPeopleIsUpperThanCurrentPeople(int maxPeople) {
+	private void validateMaxPeopleIsUpperThanCurrentPeople(int maxPeople, int currentPeople) {
 		if (maxPeople < currentPeople) {
 			throw new MoimException(HttpStatus.BAD_REQUEST, MoimErrorMessage.MAX_PEOPLE_IS_LOWER_THAN_CURRENT_PEOPLE);
 		}
@@ -206,7 +201,7 @@ public class Moim {
 		return this.darakbangId != darakbangId;
 	}
 
-	public boolean isFull() {
+	public boolean isFull(int currentPeople) {
 		return currentPeople >= maxPeople;
 	}
 
@@ -232,16 +227,5 @@ public class Moim {
 
 	public void reopen() {
 		this.moimStatus = MoimStatus.MOIMING;
-	}
-
-	public void increaseCurrentPeople() {
-		this.currentPeople++;
-		if (isFull()) {
-			complete();
-		}
-	}
-
-	public void decreaseCurrentPeople() {
-		this.currentPeople--;
 	}
 }

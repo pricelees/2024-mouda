@@ -13,8 +13,6 @@ import mouda.backend.moim.domain.Moim;
 import mouda.backend.moim.domain.MoimRole;
 import mouda.backend.moim.exception.ChamyoErrorMessage;
 import mouda.backend.moim.exception.ChamyoException;
-import mouda.backend.moim.implement.validator.ChamyoValidator;
-import mouda.backend.moim.implement.validator.MoimValidator;
 import mouda.backend.moim.infrastructure.ChamyoRepository;
 
 @Component
@@ -44,9 +42,5 @@ public class ChamyoFinder {
 
 	public List<Chamyo> readAll(long moimId, long darakbangId) {
 		return chamyoRepository.findAllByMoimIdAndDarakbangMember_DarakbangId(moimId, darakbangId);
-	}
-
-	public boolean isMoimer(long moimId, DarakbangMember darakbangMember) {
-		return chamyoRepository.isMoimer(moimId, darakbangMember.getId());
 	}
 }

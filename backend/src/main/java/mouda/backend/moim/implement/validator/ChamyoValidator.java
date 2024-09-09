@@ -1,13 +1,10 @@
 package mouda.backend.moim.implement.validator;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
-import mouda.backend.moim.domain.Chamyo;
 import mouda.backend.moim.domain.Moim;
 import mouda.backend.moim.domain.MoimRole;
 import mouda.backend.moim.exception.ChamyoErrorMessage;
@@ -23,6 +20,7 @@ public class ChamyoValidator {
 	private final MoimValidator moimValidator;
 	private final ChamyoRepository chamyoRepository;
 	private final ChamyoFinder chamyoFinder;
+	private final MoimFinder moimFinder;
 
 	public void validateCanParticipate(Moim moim, DarakbangMember darakbangMember) {
 		moimValidator.validateMoimExists(moim.getId(), darakbangMember.getDarakbang().getId());
@@ -31,7 +29,7 @@ public class ChamyoValidator {
 	}
 
 	private void validateMoimIsParticipable(Moim moim) {
-		if (moim.isFull()) {
+		if (moim.isFull(moimFinder.countCurrentPeople(moim))) {
 			throw new ChamyoException(HttpStatus.BAD_REQUEST, ChamyoErrorMessage.MOIM_FULL);
 		}
 		if (moim.isCanceled()) {

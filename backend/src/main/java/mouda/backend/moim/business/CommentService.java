@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.moim.domain.Moim;
+import mouda.backend.moim.domain.MoimRole;
 import mouda.backend.moim.implement.finder.ChamyoFinder;
 import mouda.backend.moim.implement.finder.CommentFinder;
 import mouda.backend.moim.implement.finder.MoimFinder;
@@ -35,7 +36,7 @@ public class CommentService {
 	}
 
 	private void sendCommentNotification(Moim moim, DarakbangMember author, Long parentId, Long darakbangId) {
-		if (chamyoFinder.isMoimer(moim.getId(), author)) {
+		if (chamyoFinder.readMoimRole(moim, author) == MoimRole.MOIMER) {
 			return;
 		}
 		if (parentId != null) {

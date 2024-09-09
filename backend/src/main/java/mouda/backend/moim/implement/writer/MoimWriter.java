@@ -19,6 +19,7 @@ public class MoimWriter {
 	private final MoimRepository moimRepository;
 	private final MoimValidator moimValidator;
 	private final ChamyoWriter chamyoWriter;
+	private final MoimFinder moimFinder;
 
 	public Moim save(Moim moim, DarakbangMember darakbangMember) {
 		Moim saved = moimRepository.save(moim);
@@ -28,7 +29,7 @@ public class MoimWriter {
 	}
 
 	public void updateMoimStatusIfFull(Moim moim) {
-		if (moim.isFull()) {
+		if (moim.isFull(moimFinder.countCurrentPeople(moim))) {
 			moim.complete();
 		}
 	}
@@ -54,10 +55,7 @@ public class MoimWriter {
 		String newPlace, int newMaxPeople, String newDescription
 	) {
 		moimValidator.validateCanEditMoim(moim, darakbangMember);
-		moim.update(newTitle, newDate, newTime, newPlace, newMaxPeople, newDescription);
-	}
-
-	public void increaseCurrentPeople(Moim moim) {
-		moim.increaseCurrentPeople();
+		moim.update(newTitle, newDate, newTime, newPlace, newMaxPeople, newDescription,
+			moimFinder.countCurrentPeople(moim));
 	}
 }

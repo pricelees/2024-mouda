@@ -10,6 +10,7 @@ import mouda.backend.moim.domain.MoimRole;
 import mouda.backend.moim.exception.MoimErrorMessage;
 import mouda.backend.moim.exception.MoimException;
 import mouda.backend.moim.implement.finder.ChamyoFinder;
+import mouda.backend.moim.implement.finder.MoimFinder;
 import mouda.backend.moim.infrastructure.MoimRepository;
 
 @Component
@@ -18,6 +19,7 @@ public class MoimValidator {
 
 	private final MoimRepository moimRepository;
 	private final ChamyoFinder chamyoFinder;
+	private final MoimFinder moimFinder;
 
 	public void validateMoimExists(long moimId, long darakbangId) {
 		boolean isNotExists = !moimRepository.existsByIdAndDarakbangId(moimId, darakbangId);
@@ -51,7 +53,7 @@ public class MoimValidator {
 	}
 
 	private void validateMoimIsNotFull(Moim moim) {
-		if (moim.isFull()) {
+		if (moim.isFull(moimFinder.countCurrentPeople(moim))) {
 			throw new MoimException(HttpStatus.BAD_REQUEST, MoimErrorMessage.MOIM_FULL_FOR_REOPEN);
 		}
 	}

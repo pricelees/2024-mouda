@@ -39,7 +39,6 @@ public class ChamyoWriter {
 			.build();
 		try {
 			chamyoRepository.save(chamyo);
-			moim.increaseCurrentPeople();
 		} catch (DataIntegrityViolationException exception) {
 			throw new ChamyoException(HttpStatus.BAD_REQUEST, ChamyoErrorMessage.ALREADY_PARTICIPATED);
 		}
@@ -48,6 +47,5 @@ public class ChamyoWriter {
 	public void delete(Moim moim, DarakbangMember darakbangMember) {
 		chamyoValidator.validateCanCancel(moim, darakbangMember);
 		chamyoRepository.deleteByMoimIdAndDarakbangMemberId(moim.getId(), darakbangMember.getId());
-		moim.decreaseCurrentPeople();
 	}
 }
