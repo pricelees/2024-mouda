@@ -12,13 +12,6 @@ public class ParentComment {
 
 	public ParentComment(Comment comment, List<Comment> children) {
 		this.comment = comment;
-		this.children = initialize(children);
-	}
-
-	private List<Comment> initialize(List<Comment> children) {
-		if (children.isEmpty()) {
-			return List.of();
-		}
-		return children;
+		this.children = children;
 	}
 }

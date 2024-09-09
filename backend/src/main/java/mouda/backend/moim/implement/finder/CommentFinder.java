@@ -24,7 +24,7 @@ public class CommentFinder {
 
 		return comments.stream()
 			.filter(comment -> comment.getParentId() == null)
-			.map(parentComment -> new ParentComment(parentComment, childCommentsGroupedByParentId.get(parentComment.getId())))
+			.map(parentComment -> new ParentComment(parentComment, childCommentsGroupedByParentId.getOrDefault(parentComment.getId(), List.of())))
 			.collect(Collectors.toList());
 	}
 
