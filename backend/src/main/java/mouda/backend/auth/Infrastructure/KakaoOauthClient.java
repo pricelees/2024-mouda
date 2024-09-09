@@ -18,7 +18,7 @@ import mouda.backend.auth.exception.AuthException;
 @Component
 public class KakaoOauthClient {
 
-	public static final String CLIENT_ID = "ca3adf9a52671fdbb847b809c0fdb980";
+	public static final String CLIENT_ID = "ce2dc008ea50dcb2a5bc24b450e877e4";
 	public static final String GRANT_TYPE = "authorization_code";
 
 	private final RestClient restClient;

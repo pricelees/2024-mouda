@@ -14,6 +14,7 @@ import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.moim.domain.Chamyo;
 import mouda.backend.moim.domain.Chat;
 import mouda.backend.moim.domain.Moim;
+import mouda.backend.notification.domain.MoudaNotification;
 import mouda.backend.moim.domain.MoimRole;
 import mouda.backend.moim.exception.ChatErrorMessage;
 import mouda.backend.moim.exception.ChatException;
@@ -28,7 +29,6 @@ import mouda.backend.moim.presentation.response.chat.ChatFindDetailResponse;
 import mouda.backend.moim.presentation.response.chat.ChatFindUnloadedResponse;
 import mouda.backend.moim.presentation.response.chat.ChatPreviewResponse;
 import mouda.backend.moim.presentation.response.chat.ChatPreviewResponses;
-import mouda.backend.notification.domain.MoudaNotification;
 import mouda.backend.notification.domain.NotificationType;
 import mouda.backend.notification.business.NotificationService;
 
