@@ -22,12 +22,21 @@ public interface ChamyoRepository extends JpaRepository<Chamyo, Long> {
 
 	List<Chamyo> findAllByDarakbangMemberIdOrderByIdDesc(Long darakbangMemberId);
 
-	void deleteAllByMoimId(Long moimId);
-
 	void deleteByMoimIdAndDarakbangMemberId(Long moimId, Long darakbangMemberId);
 
 	@Query("SELECT c.darakbangMember.memberId FROM Chamyo c WHERE c.moim.id = :moimId AND c.moimRole = 'MOIMER'")
 	Long findMoimerIdByMoimId(@Param("moimId") Long moimId);
 
 	List<Chamyo> findAllByDarakbangMemberIdAndMoim_DarakbangId(Long darakbangMemberId, Long darakbangId);
+
+	List<Chamyo> findAllByMoimIdAndDarakbangMember_DarakbangId(Long moimId, Long darakbangId);
+
+	@Query("""
+		SELECT 1
+		FROM Chamyo c
+		WHERE c.moim.id = :moimId
+			AND c.darakbangMember.memberId = :darakbangMemberId
+			AND c.moimRole = 'MOIMER'
+		""")
+	boolean isMoimer(@Param("moimId") Long moimId, @Param("darakbangMemberId") Long darakbangMemberId);
 }
