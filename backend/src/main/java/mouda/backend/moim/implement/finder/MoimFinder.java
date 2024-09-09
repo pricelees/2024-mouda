@@ -39,12 +39,24 @@ public class MoimFinder {
 	}
 
 	public List<MoimWithZzim> readAllMyMoim(DarakbangMember darakbangMember, FilterType filterType) {
-		List<Moim> moims = chamyoRepository.findAllByDarakbangMemberIdOrderByIdDesc(darakbangMember.getId())
-			.stream().map(Chamyo::getMoim).toList();
-		List<MoimWithZzim> myMoims = parseToMoimWithZzim(moims, darakbangMember);
-		Predicate<MoimWithZzim> moimPredicate = getPredicateByFilterType(filterType);
+		Predicate<Moim> filterPredicate = getMoimFilterPredicate(filterType);
+		System.out.println("filterPredicate = " + filterPredicate);
+		List<Moim> moims = chamyoRepository.findAllByDarakbangMemberIdOrderByIdDesc(darakbangMember.getId()).stream()
+			.map(Chamyo::getMoim)
+			.filter(filterPredicate)
+			.toList();
 
-		return myMoims.stream().filter(moimPredicate).toList();
+		return parseToMoimWithZzim(moims, darakbangMember);
+	}
+
+	private Predicate<Moim> getMoimFilterPredicate(FilterType filterType) {
+		if (filterType == FilterType.PAST) {
+			return Moim::isPastMoim;
+		}
+		if (filterType == FilterType.UPCOMING) {
+			return Moim::isUpcomingMoim;
+		}
+		return moim -> true;
 	}
 
 	public List<MoimWithZzim> readAllZzimedMoim(DarakbangMember darakbangMember) {
@@ -52,16 +64,6 @@ public class MoimFinder {
 			.stream().map(Zzim::getMoim).toList();
 
 		return parseToMoimWithZzim(moims, darakbangMember);
-	}
-
-	private Predicate<MoimWithZzim> getPredicateByFilterType(FilterType filterType) {
-		if (filterType == FilterType.PAST) {
-			return moimWithZzim -> moimWithZzim.getMoim().isPastMoim();
-		}
-		if (filterType == FilterType.UPCOMING) {
-			return moimWithZzim -> moimWithZzim.getMoim().isUpcomingMoim();
-		}
-		return moimWithZzim -> true;
 	}
 
 	private List<MoimWithZzim> parseToMoimWithZzim(List<Moim> moims, DarakbangMember darakbangMember) {
