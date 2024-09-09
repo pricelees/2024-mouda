@@ -51,6 +51,7 @@ public class MoimService {
 
 	@Transactional(readOnly = true)
 	public MoimFindAllResponses findAllMyMoim(DarakbangMember darakbangMember, FilterType filter) {
+		System.out.println("filter = " + filter);
 		List<MoimWithZzim> moimWithZzims = moimFinder.readAllMyMoim(darakbangMember, filter);
 
 		return MoimFindAllResponses.toResponse(moimWithZzims);

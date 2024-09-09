@@ -58,7 +58,10 @@ public class MoimFinder {
 		if (filterType == FilterType.PAST) {
 			return moimWithZzim -> moimWithZzim.getMoim().isPastMoim();
 		}
-		return moimWithZzim -> moimWithZzim.getMoim().isUpcomingMoim();
+		if (filterType == FilterType.UPCOMING) {
+			return moimWithZzim -> moimWithZzim.getMoim().isUpcomingMoim();
+		}
+		return moimWithZzim -> true;
 	}
 
 	private List<MoimWithZzim> parseToMoimWithZzim(List<Moim> moims, DarakbangMember darakbangMember) {
