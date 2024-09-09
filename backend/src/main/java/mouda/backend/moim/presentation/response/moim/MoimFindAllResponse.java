@@ -4,6 +4,7 @@ import static java.time.format.DateTimeFormatter.*;
 
 import lombok.Builder;
 import mouda.backend.moim.domain.Moim;
+import mouda.backend.moim.domain.MoimWithZzim;
 
 @Builder
 public record MoimFindAllResponse(
@@ -33,6 +34,24 @@ public record MoimFindAllResponse(
 			.maxPeople(moim.getMaxPeople())
 			.description(moim.getDescription())
 			.isZzimed(isZzimed)
+			.build();
+	}
+
+	public static MoimFindAllResponse toResponse(MoimWithZzim moimWithZzim) {
+		Moim moim = moimWithZzim.getMoim();
+		String time = moim.getTime() == null ? "" : moim.getTime().format(ofPattern("HH:mm"));
+		String date = moim.getDate() == null ? "" : moim.getDate().format(ISO_LOCAL_DATE);
+		String place = moim.getPlace() == null ? "" : moim.getPlace();
+		return MoimFindAllResponse.builder()
+			.moimId(moim.getId())
+			.title(moim.getTitle())
+			.date(date)
+			.time(time)
+			.place(place)
+			.currentPeople(moim.getCurrentPeople())
+			.maxPeople(moim.getMaxPeople())
+			.description(moim.getDescription())
+			.isZzimed(moimWithZzim.isZzimed())
 			.build();
 	}
 }

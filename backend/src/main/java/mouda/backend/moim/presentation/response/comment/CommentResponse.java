@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Builder;
 import mouda.backend.moim.domain.Comment;
+import mouda.backend.moim.domain.ParentComment;
 
 @Builder
 public record CommentResponse(
@@ -31,6 +32,22 @@ public record CommentResponse(
 			.nickname(parentComment.getAuthorNickname())
 			.content(parentComment.getContent())
 			.dateTime(parentComment.getCreatedAt())
+			.children(children)
+			.build();
+	}
+
+	public static CommentResponse fromParentComment(ParentComment parentComment) {
+		List<ChildCommentResponse> children = parentComment.getChildren().stream()
+			.map(ChildCommentResponse::toResponse)
+			.toList();
+
+		Comment comment = parentComment.getComment();
+
+		return CommentResponse.builder()
+			.commentId(comment.getId())
+			.nickname(comment.getAuthorNickname())
+			.content(comment.getContent())
+			.dateTime(comment.getCreatedAt())
 			.children(children)
 			.build();
 	}
