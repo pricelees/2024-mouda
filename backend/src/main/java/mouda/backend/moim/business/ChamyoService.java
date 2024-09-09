@@ -12,7 +12,6 @@ import mouda.backend.moim.domain.Moim;
 import mouda.backend.moim.domain.MoimRole;
 import mouda.backend.moim.implement.finder.ChamyoFinder;
 import mouda.backend.moim.implement.finder.MoimFinder;
-import mouda.backend.moim.implement.validator.MoimValidator;
 import mouda.backend.moim.implement.writer.ChamyoWriter;
 import mouda.backend.moim.implement.writer.MoimWriter;
 import mouda.backend.moim.presentation.response.chamyo.ChamyoFindAllResponses;
@@ -49,7 +48,6 @@ public class ChamyoService {
 	public void chamyoMoim(Long darakbangId, Long moimId, DarakbangMember darakbangMember) {
 		Moim moim = moimFinder.read(moimId, darakbangId);
 		chamyoWriter.saveAsMoimee(moim, darakbangMember);
-		moim.increaseCurrentPeople();
 
 		notificationService.notifyToMembers(NotificationType.NEW_MOIMEE_JOINED, darakbangId, moim, darakbangMember);
 	}
@@ -57,7 +55,6 @@ public class ChamyoService {
 	public void cancelChamyo(Long darakbangId, Long moimId, DarakbangMember darakbangMember) {
 		Moim moim = moimFinder.read(moimId, darakbangId);
 		chamyoWriter.delete(moim, darakbangMember);
-		moim.decreaseCurrentPeople();
 
 		sendCancelNotification(darakbangId, darakbangMember, moim);
 	}

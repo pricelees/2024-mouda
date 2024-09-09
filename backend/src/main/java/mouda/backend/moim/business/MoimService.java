@@ -11,17 +11,13 @@ import mouda.backend.moim.domain.FilterType;
 import mouda.backend.moim.domain.Moim;
 import mouda.backend.moim.domain.MoimWithZzim;
 import mouda.backend.moim.domain.ParentComment;
-import mouda.backend.moim.domain.Zzim;
 import mouda.backend.moim.implement.finder.CommentFinder;
 import mouda.backend.moim.implement.finder.MoimFinder;
-import mouda.backend.moim.implement.finder.ZzimFinder;
-import mouda.backend.moim.implement.validator.MoimValidator;
 import mouda.backend.moim.implement.writer.MoimWriter;
 import mouda.backend.moim.presentation.request.moim.MoimCreateRequest;
 import mouda.backend.moim.presentation.request.moim.MoimEditRequest;
 import mouda.backend.moim.presentation.response.comment.CommentResponses;
 import mouda.backend.moim.presentation.response.moim.MoimDetailsFindResponse;
-import mouda.backend.moim.presentation.response.moim.MoimFindAllResponse;
 import mouda.backend.moim.presentation.response.moim.MoimFindAllResponses;
 import mouda.backend.notification.business.NotificationService;
 import mouda.backend.notification.domain.NotificationType;
@@ -43,12 +39,12 @@ public class MoimService {
 		List<ParentComment> parentComments = commentFinder.readAllParentComments(moim);
 		CommentResponses commentResponses = CommentResponses.toResponse(parentComments);
 
-		return MoimDetailsFindResponse.toResponse(moim, commentResponses);
+		return MoimDetailsFindResponse.toResponse(moim, moimFinder.countCurrentPeople(moim), commentResponses);
 	}
 
 	@Transactional(readOnly = true)
 	public MoimFindAllResponses findAllMoim(Long darakbangId, DarakbangMember darakbangMember) {
-		List<MoimWithZzim> moimWithZzims = moimFinder.readAll(darakbangId);
+		List<MoimWithZzim> moimWithZzims = moimFinder.readAll(darakbangId, darakbangMember);
 
 		return MoimFindAllResponses.toResponse(moimWithZzims);
 	}

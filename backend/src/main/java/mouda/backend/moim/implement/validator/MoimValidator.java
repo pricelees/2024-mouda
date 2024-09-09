@@ -10,7 +10,6 @@ import mouda.backend.moim.domain.MoimRole;
 import mouda.backend.moim.exception.MoimErrorMessage;
 import mouda.backend.moim.exception.MoimException;
 import mouda.backend.moim.implement.finder.ChamyoFinder;
-import mouda.backend.moim.implement.finder.MoimFinder;
 import mouda.backend.moim.infrastructure.MoimRepository;
 
 @Component
@@ -41,7 +40,7 @@ public class MoimValidator {
 	public void validateCanReopenMoim(Moim moim, DarakbangMember darakbangMember) {
 		validateIsMoimer(moim, darakbangMember, MoimErrorMessage.NOT_ALLOWED_TO_REOPEN);
 		validateMoimIsNotFull(moim);
-		validateMoimIsNotCompleted(moim);
+		validateMoimIsNotCanceled(moim);
 		validateMoimIsNotMoiming(moim);
 	}
 

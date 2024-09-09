@@ -1,5 +1,7 @@
 package mouda.backend.moim.implement.writer;
 
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,6 @@ import mouda.backend.moim.infrastructure.CommentRepository;
 @RequiredArgsConstructor
 public class CommentWriter {
 
-
 	private final CommentRepository commentRepository;
 	private final CommentValidator commentValidator;
 
@@ -25,6 +26,7 @@ public class CommentWriter {
 			.moim(moim)
 			.darakbangMember(darakbangMember)
 			.parentId(parentId)
+			.createdAt(LocalDateTime.now())
 			.build();
 
 		commentRepository.save(comment);
