@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy-with-properties:
-    runs-on: prod
+    runs-on: [self-hosted, mouda]
 
     steps:
       - name: updating properties if exists
