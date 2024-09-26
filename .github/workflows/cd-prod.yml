@@ -1,15 +1,24 @@
-name: cd-prod
+name: test-properties
 
 on:
   push:
     branches:
-      - develop
+      - properties-test
 
 jobs:
-  deploy:
+  deploy-with-properties:
     runs-on: prod
 
     steps:
+      - name: updating properties if exists
+        run: |
+          if [ -n "${{ secrets.NEW_PROPERTIES }}" ]; then
+            cd ~/deploy
+            echo "${{ secrets.NEW_PROPERTIES }}" > new_properties
+            ./add-new-properties.sh
+          fi
+          
+          
       - name: deploy
         run: |
           cd ~/deploy && ./deploy-be.sh
