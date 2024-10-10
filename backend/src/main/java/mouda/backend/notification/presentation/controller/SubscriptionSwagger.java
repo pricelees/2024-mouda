@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import mouda.backend.common.config.argumentresolver.LoginDarakbangMember;
+import mouda.backend.common.response.RestResponse;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.notification.presentation.request.ChatSubscriptionRequest;
 import mouda.backend.notification.presentation.response.SubscriptionResponse;
@@ -18,7 +19,7 @@ public interface SubscriptionSwagger {
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "조회 성공"),
 	})
-	ResponseEntity<SubscriptionResponse> readMoimCreateSubscription(
+	ResponseEntity<RestResponse<SubscriptionResponse>> readMoimCreateSubscription(
 		@LoginDarakbangMember DarakbangMember darakbangMember
 	);
 
@@ -34,7 +35,7 @@ public interface SubscriptionSwagger {
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "조회 성공"),
 	})
-	ResponseEntity<SubscriptionResponse> readSpecificChatRoomSubscription(
+	ResponseEntity<RestResponse<SubscriptionResponse>> readSpecificChatRoomSubscription(
 		@LoginDarakbangMember DarakbangMember darakbangMember,
 		@Valid @RequestBody ChatSubscriptionRequest chatSubscriptionRequest
 	);

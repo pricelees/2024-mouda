@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import mouda.backend.common.config.argumentresolver.LoginDarakbangMember;
+import mouda.backend.common.response.RestResponse;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.notification.presentation.response.MemberNotificationFindAllResponse;
 
@@ -16,7 +17,7 @@ public interface MemberNotificationSwagger {
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "조회 성공!"),
 	})
-	ResponseEntity<MemberNotificationFindAllResponse> findAllMemberNotification(
+	ResponseEntity<RestResponse<MemberNotificationFindAllResponse>> findAllMemberNotification(
 		@LoginDarakbangMember DarakbangMember darakbangMember,
 		@PathVariable Long darakbangId
 	);

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mouda.backend.common.config.argumentresolver.LoginDarakbangMember;
+import mouda.backend.common.response.RestResponse;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.notification.business.SubscriptionService;
 import mouda.backend.notification.presentation.request.ChatSubscriptionRequest;
@@ -22,12 +23,12 @@ public class SubscriptionController implements SubscriptionSwagger {
 
 	@GetMapping("/v1/subscription/moim")
 	@Override
-	public ResponseEntity<SubscriptionResponse> readMoimCreateSubscription(
+	public ResponseEntity<RestResponse<SubscriptionResponse>> readMoimCreateSubscription(
 		@LoginDarakbangMember DarakbangMember darakbangMember
 	) {
 		SubscriptionResponse response = subscriptionService.readMoimCreateSubscription(darakbangMember);
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(new RestResponse<>(response));
 	}
 
 	@PostMapping("/v1/subscription/moim")
@@ -42,14 +43,14 @@ public class SubscriptionController implements SubscriptionSwagger {
 
 	@GetMapping("/v1/subscription/chat")
 	@Override
-	public ResponseEntity<SubscriptionResponse> readSpecificChatRoomSubscription(
+	public ResponseEntity<RestResponse<SubscriptionResponse>> readSpecificChatRoomSubscription(
 		@LoginDarakbangMember DarakbangMember darakbangMember,
 		@Valid @RequestBody ChatSubscriptionRequest chatSubscriptionRequest
 	) {
 		SubscriptionResponse response = subscriptionService.readChatRoomSubscription(darakbangMember,
 			chatSubscriptionRequest);
 
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(new RestResponse<>(response));
 	}
 
 	@PostMapping("/v1/subscription/chat")
