@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mouda.backend.darakbangmember.domain.DarakbangMember;
+import mouda.backend.member.domain.Member;
 import mouda.backend.notification.implement.fcm.token.FcmTokenWriter;
 import mouda.backend.notification.presentation.request.FcmTokenRequest;
 
@@ -17,7 +17,7 @@ public class FcmTokenService {
 	private final FcmTokenWriter fcmTokenWriter;
 
 	@Transactional
-	public void saveOrRefreshToken(DarakbangMember darakbangMember, FcmTokenRequest tokenRequest) {
-		fcmTokenWriter.saveOrRefresh(darakbangMember, tokenRequest.token());
+	public void saveOrRefreshToken(Member member, FcmTokenRequest tokenRequest) {
+		fcmTokenWriter.saveOrRefresh(member, tokenRequest.token());
 	}
 }
