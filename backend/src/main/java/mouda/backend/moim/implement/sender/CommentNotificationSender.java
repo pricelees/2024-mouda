@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
+import mouda.backend.common.config.UrlConfig;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.moim.domain.Comment;
 import mouda.backend.moim.implement.finder.CommentRecipientFinder;
@@ -14,11 +14,16 @@ import mouda.backend.notification.domain.NotificationType;
 import mouda.backend.notification.domain.Recipient;
 
 @Component
-@RequiredArgsConstructor
-public class CommentNotificationSender {
+public class CommentNotificationSender extends AbstractNotificationSender{
 
 	private final CommentRecipientFinder commentRecipientFinder;
 	private final ApplicationEventPublisher eventPublisher;
+
+	public CommentNotificationSender(UrlConfig urlConfig, CommentRecipientFinder commentRecipientFinder, ApplicationEventPublisher eventPublisher) {
+		super(urlConfig);
+		this.commentRecipientFinder = commentRecipientFinder;
+		this.eventPublisher = eventPublisher;
+	}
 
 	public void sendCommentNotification(Comment comment, DarakbangMember author) {
 		List<Recipient> recipients;
@@ -30,7 +35,7 @@ public class CommentNotificationSender {
 			recipients = commentRecipientFinder.getNewReplyNotificationRecipients(comment);
 			notificationType = NotificationType.NEW_REPLY;
 		}
-		NotificationEvent notificationEvent = new NotificationEvent(notificationType, comment.getMoim().getTitle(), notificationType.createMessage(author.getNickname()), recipients);
+		NotificationEvent notificationEvent = new NotificationEvent(notificationType, comment.getMoim().getTitle(), notificationType.createMessage(author.getNickname()), getMoimUrl(author.getDarakbang().getId(), comment.getMoim().getId()), recipients);
 
 		eventPublisher.publishEvent(notificationEvent);
 	}
