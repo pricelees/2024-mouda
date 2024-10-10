@@ -2,6 +2,7 @@ package mouda.backend.notification.presentation.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -17,10 +18,11 @@ public class MemberNotificationController implements MemberNotificationSwagger {
 	private final MemberNotificationService memberNotificationService;
 
 	// todo: 이제 darakbangId로 조회할 필요가 없음. DarakbangMember의 id로 조회. -> API 명세 수정 필요
-	@GetMapping("/v1/notification/mine")
+	@GetMapping("/v1/darakbang/{darakbangId}notification/mine")
 	@Override
 	public ResponseEntity<MemberNotificationFindAllResponse> findAllMemberNotification(
-		@LoginDarakbangMember DarakbangMember darakbangMember
+		@LoginDarakbangMember DarakbangMember darakbangMember,
+		@PathVariable Long darakbangId
 	) {
 		MemberNotificationFindAllResponse response = memberNotificationService.findAllMemberNotification(
 			darakbangMember);

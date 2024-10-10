@@ -1,6 +1,7 @@
 package mouda.backend.notification.presentation.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,6 +17,7 @@ public interface MemberNotificationSwagger {
 		@ApiResponse(responseCode = "200", description = "조회 성공!"),
 	})
 	ResponseEntity<MemberNotificationFindAllResponse> findAllMemberNotification(
-		@LoginDarakbangMember DarakbangMember darakbangMember
+		@LoginDarakbangMember DarakbangMember darakbangMember,
+		@PathVariable Long darakbangId
 	);
 }
