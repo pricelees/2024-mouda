@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import lombok.RequiredArgsConstructor;
 import mouda.backend.notification.domain.CommonNotification;
@@ -22,7 +24,7 @@ public class NotificationService {
 	private final SubscriptionFilterRegistry subscriptionFilterRegistry;
 	private final NotificationSender notificationSender;
 
-	@EventListener
+	@TransactionalEventListener(classes = NotificationEvent.class, phase = TransactionPhase.AFTER_COMMIT)
 	public void sendNotification(NotificationEvent notificationEvent) {
 		CommonNotification commonNotification = notificationEvent.toCommonNotification();
 		notificationWriter.saveAllMemberNotification(commonNotification, notificationEvent.getRecipients());

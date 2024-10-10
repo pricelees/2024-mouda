@@ -1,6 +1,7 @@
 package mouda.backend.notification.business;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
@@ -12,6 +13,7 @@ import mouda.backend.notification.presentation.response.SubscriptionResponse;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SubscriptionService {
 
 	private final SubscriptionFinder subscriptionFinder;
