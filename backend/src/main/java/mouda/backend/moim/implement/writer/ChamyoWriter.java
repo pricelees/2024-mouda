@@ -21,15 +21,15 @@ public class ChamyoWriter {
 	private final ChamyoValidator chamyoValidator;
 	private final ChamyoRepository chamyoRepository;
 
-	public void saveAsMoimer(Moim moim, DarakbangMember darakbangMember) {
-		save(moim, darakbangMember, MoimRole.MOIMER);
+	public Chamyo saveAsMoimer(Moim moim, DarakbangMember darakbangMember) {
+		return save(moim, darakbangMember, MoimRole.MOIMER);
 	}
 
-	public void saveAsMoimee(Moim moim, DarakbangMember darakbangMember) {
-		save(moim, darakbangMember, MoimRole.MOIMEE);
+	public Chamyo saveAsMoimee(Moim moim, DarakbangMember darakbangMember) {
+		return save(moim, darakbangMember, MoimRole.MOIMEE);
 	}
 
-	private void save(Moim moim, DarakbangMember darakbangMember, MoimRole moimRole) {
+	private Chamyo save(Moim moim, DarakbangMember darakbangMember, MoimRole moimRole) {
 		chamyoValidator.validateCanParticipate(moim, darakbangMember);
 
 		Chamyo chamyo = Chamyo.builder()
@@ -37,15 +37,16 @@ public class ChamyoWriter {
 			.darakbangMember(darakbangMember)
 			.moimRole(moimRole)
 			.build();
+
 		try {
-			chamyoRepository.save(chamyo);
+			return chamyoRepository.save(chamyo);
 		} catch (DataIntegrityViolationException exception) {
 			throw new ChamyoException(HttpStatus.BAD_REQUEST, ChamyoErrorMessage.ALREADY_PARTICIPATED);
 		}
 	}
 
-	public void delete(Moim moim, DarakbangMember darakbangMember) {
-		chamyoValidator.validateCanCancel(moim, darakbangMember);
-		chamyoRepository.deleteByMoimIdAndDarakbangMemberId(moim.getId(), darakbangMember.getId());
+	public void delete(Chamyo chamyo) {
+		chamyoValidator.validateCanCancel(chamyo);
+		chamyoRepository.delete(chamyo);
 	}
 }

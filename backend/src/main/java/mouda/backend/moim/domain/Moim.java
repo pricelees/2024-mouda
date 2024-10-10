@@ -213,6 +213,7 @@ public class Moim {
 		return moimStatus == MoimStatus.COMPLETED;
 	}
 
+
 	public boolean isMoiming() {
 		return moimStatus == MoimStatus.MOIMING;
 	}
