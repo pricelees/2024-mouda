@@ -28,6 +28,4 @@ public interface ChamyoRepository extends JpaRepository<Chamyo, Long> {
 	Long findMoimerIdByMoimId(@Param("moimId") Long moimId);
 
 	List<Chamyo> findAllByDarakbangMemberIdAndMoim_DarakbangId(Long darakbangMemberId, Long darakbangId);
-
-	List<Chamyo> findAllByMoimIdAndDarakbangMember_DarakbangId(Long moimId, Long darakbangId);
 }

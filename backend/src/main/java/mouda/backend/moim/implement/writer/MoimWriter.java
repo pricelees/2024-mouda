@@ -10,6 +10,7 @@ import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.moim.domain.Moim;
 import mouda.backend.moim.implement.finder.MoimFinder;
 import mouda.backend.moim.implement.validator.MoimValidator;
+import mouda.backend.moim.implement.validator.ChamyoValidator;
 import mouda.backend.moim.infrastructure.MoimRepository;
 
 @Component
@@ -20,6 +21,7 @@ public class MoimWriter {
 	private final MoimValidator moimValidator;
 	private final ChamyoWriter chamyoWriter;
 	private final MoimFinder moimFinder;
+	private final ChamyoValidator chamyoValidator;
 
 	public Moim save(Moim moim, DarakbangMember darakbangMember) {
 		Moim saved = moimRepository.save(moim);
@@ -57,5 +59,20 @@ public class MoimWriter {
 		moimValidator.validateCanEditMoim(moim, darakbangMember);
 		moim.update(newTitle, newDate, newTime, newPlace, newMaxPeople, newDescription,
 			moimFinder.countCurrentPeople(moim));
+	}
+
+	public void confirmPlace(Moim moim, DarakbangMember darakbangMember, String place) {
+		chamyoValidator.validateMoimer(moim, darakbangMember);
+		moim.confirmPlace(place);
+	}
+
+	public void confirmDateTime(Moim moim, DarakbangMember darakbangMember, LocalDate date, LocalTime time) {
+		chamyoValidator.validateMoimer(moim, darakbangMember);
+		moim.confirmDateTime(date, time);
+	}
+
+	public void openChatByMoimer(Moim moim, DarakbangMember darakbangMember) {
+		chamyoValidator.validateMoimer(moim, darakbangMember);
+		moim.openChat();
 	}
 }

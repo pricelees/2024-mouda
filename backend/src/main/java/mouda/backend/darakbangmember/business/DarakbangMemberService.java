@@ -1,20 +1,17 @@
 package mouda.backend.darakbangmember.business;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import mouda.backend.darakbang.domain.Darakbang;
+import mouda.backend.darakbang.implement.DarakbangFinder;
+import mouda.backend.darakbangmember.domain.DarakBangMemberRole;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
-import mouda.backend.darakbangmember.presentation.response.DarakbangMemberResponse;
+import mouda.backend.darakbangmember.domain.DarakbangMembers;
+import mouda.backend.darakbangmember.implement.DarakbangMemberFinder;
 import mouda.backend.darakbangmember.presentation.response.DarakbangMemberResponses;
 import mouda.backend.darakbangmember.presentation.response.DarakbangMemberRoleResponse;
-import mouda.backend.darakbangmember.exception.DarakbangMemberErrorMessage;
-import mouda.backend.darakbangmember.exception.DarakbangMemberException;
-import mouda.backend.darakbangmember.infrastructure.DarakbangMemberRepository;
 import mouda.backend.member.domain.Member;
 
 @Service
@@ -22,31 +19,25 @@ import mouda.backend.member.domain.Member;
 @RequiredArgsConstructor
 public class DarakbangMemberService {
 
-	private final DarakbangMemberRepository darakbangMemberRepository;
+	private final DarakbangMemberFinder darakbangMemberFinder;
+	private final DarakbangFinder darakbangFinder;
 
 	@Transactional(readOnly = true)
 	public DarakbangMemberResponses findAllDarakbangMembers(Long darakbangId, DarakbangMember member) {
-		if (member.isNotManager()) {
-			throw new DarakbangMemberException(HttpStatus.FORBIDDEN, DarakbangMemberErrorMessage.NOT_ALLOWED_TO_READ);
-		}
+		DarakbangMembers darakbangMembers = darakbangMemberFinder.findAllDarakbangMembers(darakbangId);
 
-		List<DarakbangMember> darakbangMembers = darakbangMemberRepository.findAllByDarakbangId(darakbangId);
-		List<DarakbangMemberResponse> memberResponses = darakbangMembers.stream()
-			.map(DarakbangMemberResponse::toResponse)
-			.toList();
-
-		return DarakbangMemberResponses.toResponse(memberResponses);
+		return DarakbangMemberResponses.toResponse(darakbangMembers);
 	}
 
 	@Transactional(readOnly = true)
 	public DarakbangMemberRoleResponse findDarakbangMemberRole(Long darakbangId, Member member) {
-		Optional<DarakbangMember> optionalDarakbangMember = darakbangMemberRepository.findByDarakbangIdAndMemberId(
-			darakbangId, member.getId());
+		DarakBangMemberRole role = darakbangMemberFinder.findDarakbangMemberRole(darakbangId, member.getId());
 
-		if (optionalDarakbangMember.isPresent()) {
-			DarakbangMember darakbangMember = optionalDarakbangMember.get();
-			return DarakbangMemberRoleResponse.toResponse(darakbangMember.getRole());
-		}
-		return DarakbangMemberRoleResponse.toResponse();
+		return DarakbangMemberRoleResponse.toResponse(role);
+	}
+
+	public DarakbangMember findDarakbangMember(long darakbangId, Member member) {
+		Darakbang darakbang = darakbangFinder.findById(darakbangId);
+		return darakbangMemberFinder.find(darakbang, member);
 	}
 }

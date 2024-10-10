@@ -1,7 +1,8 @@
 package mouda.backend.moim.implement.finder;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -20,21 +21,28 @@ public class CommentFinder {
 
 	public List<ParentComment> readAllParentComments(Moim moim) {
 		List<Comment> comments = commentRepository.findAllByMoimOrderByCreatedAt(moim);
-		Map<Long, List<Comment>> childCommentsGroupedByParentId = readAllChildCommentsGroupedByParentId(comments);
 
 		return comments.stream()
-			.filter(comment -> comment.getParentId() == null)
-			.map(parentComment -> new ParentComment(parentComment, childCommentsGroupedByParentId.getOrDefault(parentComment.getId(), List.of())))
+			.filter(Comment::isParent)
+			.map(parentComment -> new ParentComment(parentComment, getChildComments(parentComment, comments)))
 			.collect(Collectors.toList());
 	}
 
-	private Map<Long, List<Comment>> readAllChildCommentsGroupedByParentId(List<Comment> comments) {
+	private List<Comment> getChildComments(Comment parentComment, List<Comment> comments) {
 		return comments.stream()
-			.filter(comment -> comment.getParentId() != null)
-			.collect(Collectors.groupingBy(Comment::getParentId));
+			.filter(comment -> Objects.equals(comment.getParentId(), parentComment.getId()))
+			.toList();
 	}
 
 	public Long readMemberIdByParentId(Long parentId) {
 		return commentRepository.findMemberIdByParentId(parentId);
+	}
+
+	public Optional<Comment> findByParentId(Long parentId) {
+		if (parentId == null) {
+			return Optional.empty();
+		}
+
+		return commentRepository.findByParentId(parentId);
 	}
 }

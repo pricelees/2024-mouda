@@ -1,13 +1,11 @@
 package mouda.backend.moim.implement.finder;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
-import mouda.backend.moim.domain.Moim;
 import mouda.backend.moim.domain.Zzim;
 import mouda.backend.moim.infrastructure.ZzimRepository;
 
@@ -17,19 +15,11 @@ public class ZzimFinder {
 
 	private final ZzimRepository zzimRepository;
 
-	public boolean isZzimExist(Moim moim) {
-		return zzimRepository.existsByMoimId(moim.getId());
-	}
-
 	public Optional<Zzim> find(long moimId, DarakbangMember darakbangMember) {
 		return zzimRepository.findByMoimIdAndDarakbangMemberId(moimId, darakbangMember.getId());
 	}
 
 	public boolean isMoimZzimedByMember(long moimId, DarakbangMember darakbangMember) {
 		return zzimRepository.existsByMoimIdAndDarakbangMemberId(moimId, darakbangMember.getId());
-	}
-
-	public List<Zzim> readAllByDarakbangMember(DarakbangMember darakbangMember) {
-		return zzimRepository.findAllByDarakbangMemberIdOrderByIdDesc(darakbangMember.getId());
 	}
 }
