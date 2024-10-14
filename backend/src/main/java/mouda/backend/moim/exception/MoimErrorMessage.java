@@ -32,7 +32,9 @@ public enum MoimErrorMessage {
 	MOIM_FULL_FOR_REOPEN("모임이 꽉 차서 다시 열 수 없어요."),
 	ALREADY_MOIMING("이미 모집 중인 모임이에요."),
 	NOT_ALLOWED_TO_EDIT("방장만 수정할 수 있어요."),
-	MAX_PEOPLE_IS_LOWER_THAN_CURRENT_PEOPLE("모임 최대 인원을 현재 인원보다 작게 설정할 수 없어요.");
+	MAX_PEOPLE_IS_LOWER_THAN_CURRENT_PEOPLE("모임 최대 인원을 현재 인원보다 작게 설정할 수 없어요."),
+
+	NOT_ALLOWED_NOTIFICATION_TYPE("지원하지 않는 알림 타입이에요.");
 
 	private final String message;
 }

@@ -24,19 +24,19 @@ public class SubscriptionService {
 		boolean isSubscribed = subscription.isSubscribedMoimCreate();
 
 		return SubscriptionResponse.builder()
-			.isSubscribed(isSubscribed)
-			.build();
+				.isSubscribed(isSubscribed)
+				.build();
 	}
 
 	public SubscriptionResponse readChatRoomSubscription(
-		Member member, ChatSubscriptionRequest request
+			Member member, Long darakbangId, Long chatRoomId
 	) {
 		Subscription subscription = subscriptionFinder.readSubscription(member);
-		boolean isSubscribed = subscription.isSubscribedChatRoom(request.darakbangId(), request.chatRoomId());
+		boolean isSubscribed = subscription.isSubscribedChatRoom(darakbangId, chatRoomId);
 
 		return SubscriptionResponse.builder()
-			.isSubscribed(isSubscribed)
-			.build();
+				.isSubscribed(isSubscribed)
+				.build();
 	}
 
 	public void changeMoimCreateSubscription(Member member) {

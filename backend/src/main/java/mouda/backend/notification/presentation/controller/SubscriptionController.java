@@ -4,14 +4,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import mouda.backend.common.config.argumentresolver.LoginDarakbangMember;
 import mouda.backend.common.config.argumentresolver.LoginMember;
 import mouda.backend.common.response.RestResponse;
-import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.member.domain.Member;
 import mouda.backend.notification.business.SubscriptionService;
 import mouda.backend.notification.presentation.request.ChatSubscriptionRequest;
@@ -26,7 +25,7 @@ public class SubscriptionController implements SubscriptionSwagger {
 	@GetMapping("/v1/subscription/moim")
 	@Override
 	public ResponseEntity<RestResponse<SubscriptionResponse>> readMoimCreateSubscription(
-		@LoginMember Member member
+			@LoginMember Member member
 	) {
 		SubscriptionResponse response = subscriptionService.readMoimCreateSubscription(member);
 
@@ -36,7 +35,7 @@ public class SubscriptionController implements SubscriptionSwagger {
 	@PostMapping("/v1/subscription/moim")
 	@Override
 	public ResponseEntity<Void> changeMoimCreateSubscription(
-		@LoginMember Member member
+			@LoginMember Member member
 	) {
 		subscriptionService.changeMoimCreateSubscription(member);
 
@@ -46,11 +45,12 @@ public class SubscriptionController implements SubscriptionSwagger {
 	@GetMapping("/v1/subscription/chat")
 	@Override
 	public ResponseEntity<RestResponse<SubscriptionResponse>> readSpecificChatRoomSubscription(
-		@LoginMember Member member,
-		@Valid @RequestBody ChatSubscriptionRequest chatSubscriptionRequest
+			@LoginMember Member member,
+			@RequestParam("darakbangId") Long darakbangId,
+			@RequestParam("chatRoomId") Long chatRoomId
 	) {
 		SubscriptionResponse response = subscriptionService.readChatRoomSubscription(member,
-			chatSubscriptionRequest);
+				darakbangId, chatRoomId);
 
 		return ResponseEntity.ok(new RestResponse<>(response));
 	}
@@ -58,8 +58,8 @@ public class SubscriptionController implements SubscriptionSwagger {
 	@PostMapping("/v1/subscription/chat")
 	@Override
 	public ResponseEntity<Void> changeChatRoomSubscription(
-		@LoginMember Member member,
-		@Valid @RequestBody ChatSubscriptionRequest chatSubscriptionRequest
+			@LoginMember Member member,
+			@Valid @RequestBody ChatSubscriptionRequest chatSubscriptionRequest
 	) {
 		subscriptionService.changeChatRoomSubscription(member, chatSubscriptionRequest);
 

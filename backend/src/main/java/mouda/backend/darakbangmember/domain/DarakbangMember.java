@@ -71,6 +71,14 @@ public class DarakbangMember {
 		return role != DarakBangMemberRole.MANAGER;
 	}
 
+	public boolean isSameMemberWith(DarakbangMember other) {
+		return this.id.equals(other.id);
+	}
+
+	public boolean isNotSameMemberWith(DarakbangMember other) {
+		return !isSameMemberWith(other);
+	}
+
 	public String getDarakbangName() {
 		return darakbang.getName();
 	}

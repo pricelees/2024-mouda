@@ -37,27 +37,30 @@ public class CommentRecipientFinder {
 		return getCommentRecipientWhenReply(comment);
 	}
 
+	// 댓글
+	// 작성자가 방장인 경우: 아무에게도 알림을 보내지 않음.
+	// 작성자가 방장이 아닌 경우: 방장에게 '댓글' 알림을 보냄.
 	private List<CommentRecipient> getCommentRecipientWhenComment(Comment comment) {
 		List<CommentRecipient> result = new ArrayList<>();
 		Moim moim = comment.getMoim();
 		DarakbangMember moimer = getMoimer(moim);
 		DarakbangMember author = comment.getDarakbangMember();
 
-		if (!Objects.equals(moimer.getId(), author.getId())) {
+		if (moimer.isNotSameMemberWith(author)) {
 			result.add(new CommentRecipient(NotificationType.NEW_COMMENT,
-				List.of(new Recipient(moimer.getMemberId(), moimer.getId()))));
+					List.of(new Recipient(moimer.getMemberId(), moimer.getId()))));
 		}
 
 		return result;
 	}
-
 
 	// 답글
 	// 작성자가 방장인 경우:
 	// 			-> 원 댓글 작성자가 방장이면 아무에게도 알림 X
 	// 			-> 원 댓글 작성자가 방장이 아니면 원 댓글 작성자에게만 답글 알림
 	// 작성자가 방장이 아닌 경우:
-	// 			-> 원 댓글 작성자가 방장인 경우: 방장에게 답글 알림
+	// 			-> 원 댓글 작성자가 방장인 경우: 방장에게만 답글 알림
+	//          -> 원 댓글 작성자가 자신인 경우: 방장에게만 댓글 알림
 	// 			-> 원 댓글 작성자가 방장이 아닌 경우: 원 댓글 작성자에게는 답글 알림, 방장에게는 댓글 알림.
 	private List<CommentRecipient> getCommentRecipientWhenReply(Comment comment) {
 		List<CommentRecipient> result = new ArrayList<>();
@@ -65,28 +68,30 @@ public class CommentRecipientFinder {
 		DarakbangMember moimer = getMoimer(moim);
 		DarakbangMember author = comment.getDarakbangMember();
 		DarakbangMember parentAuthor = commentRepository.findParentCommentByParentId(comment.getParentId())
-			.map(Comment::getDarakbangMember)
-			.orElseThrow(() -> new CommentException(HttpStatus.NOT_FOUND, CommentErrorMessage.PARENT_NOT_FOUND));
+				.map(Comment::getDarakbangMember)
+				.orElseThrow(() -> new CommentException(HttpStatus.NOT_FOUND, CommentErrorMessage.PARENT_NOT_FOUND));
 
 		// 작성자가 방장인 경우
-		if (Objects.equals(author.getId(), moimer.getId())) {
+		if (author.isSameMemberWith(moimer)) {
 			// 원 댓글 작성자가 방장이 아닌 경우
-			if (!Objects.equals(parentAuthor.getId(), moimer.getId())) {
+			if (parentAuthor.isNotSameMemberWith(moimer)) {
 				result.add(new CommentRecipient(NotificationType.NEW_REPLY,
-					List.of(new Recipient(parentAuthor.getMemberId(), parentAuthor.getId()))));
+						List.of(new Recipient(parentAuthor.getMemberId(), parentAuthor.getId()))));
 			}
 		} else {
 			// 작성자가 방장이 아닌 경우
-			if (Objects.equals(parentAuthor.getId(), moimer.getId())) {
+			if (parentAuthor.isSameMemberWith(moimer)) {
 				// 원 댓글 작성자가 방장인 경우
 				result.add(new CommentRecipient(NotificationType.NEW_REPLY,
-					List.of(new Recipient(moimer.getMemberId(), moimer.getId()))));
+						List.of(new Recipient(moimer.getMemberId(), moimer.getId()))));
 			} else {
 				// 원 댓글 작성자가 방장이 아닌 경우
-				result.add(new CommentRecipient(NotificationType.NEW_REPLY,
-					List.of(new Recipient(parentAuthor.getMemberId(), parentAuthor.getId()))));
+				if (parentAuthor.isNotSameMemberWith(author)) {
+					result.add(new CommentRecipient(NotificationType.NEW_REPLY,
+							List.of(new Recipient(parentAuthor.getMemberId(), parentAuthor.getId()))));
+				}
 				result.add(new CommentRecipient(NotificationType.NEW_COMMENT,
-					List.of(new Recipient(moimer.getMemberId(), moimer.getId()))));
+						List.of(new Recipient(moimer.getMemberId(), moimer.getId()))));
 			}
 		}
 
@@ -94,10 +99,10 @@ public class CommentRecipientFinder {
 	}
 
 	private DarakbangMember getMoimer(Moim moim) {
-		Optional<Chamyo> moimerChamyo = chamyoRepository.findMoimerByMoimId(moim.getId());
-		if (moimerChamyo.isEmpty()) {
+		Optional<Chamyo> chamyoOptional = chamyoRepository.findMoimerByMoimId(moim.getId());
+		if (chamyoOptional.isEmpty()) {
 			throw new ChamyoException(HttpStatus.NOT_FOUND, ChamyoErrorMessage.NOT_FOUND);
 		}
-		return moimerChamyo.get().getDarakbangMember();
+		return chamyoOptional.get().getDarakbangMember();
 	}
 }
