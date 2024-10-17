@@ -21,6 +21,7 @@ self.addEventListener('notificationclick', function(event) {
 
   // 알림 데이터를 가져오기
   const link = event.notification.data.FCM_MSG.data.link;
+  console.log(link);
 
   event.notification.close(); // 알림 닫기
 
@@ -31,10 +32,12 @@ self.addEventListener('notificationclick', function(event) {
         // 이미 열린 창이 있는지 확인
         for (let i = 0; i < windowClients.length; i++) {
           const client = windowClients[i];
+          console.log(client.url);
           if (client.url === link && 'focus' in client) {
             return client.focus();
           }
         }
+
         // 새 창을 열거나 이미 있는 창으로 이동
         if (clients.openWindow) {
           return clients.openWindow(link);
@@ -44,7 +47,7 @@ self.addEventListener('notificationclick', function(event) {
   }
 });
 
-firebase.initializeApp(firebaseConfig);
+let initializeApp = firebase.initializeApp(firebaseConfig);
 
 const messaging = firebase.messaging();
 
