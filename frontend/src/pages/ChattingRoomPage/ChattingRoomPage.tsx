@@ -9,6 +9,7 @@ import ChatMenuItem from '@_components/ChatMenuItem/ChatMenuItem';
 import ChattingFooter from '@_components/ChattingFooter/ChattingFooter';
 import ChattingRoomLayout from '@_layouts/ChattingRoomLayout/ChattingRoomLayout';
 import DateTimeModalContent from '@_components/DateTimeModalContent/DateTimeModalContent';
+import GET_ROUTES from '@_common/getRoutes';
 import MissingFallback from '@_components/MissingFallback/MissingFallback';
 import Modal from '@_components/Modal/Modal';
 import Picker from '@_components/Icons/Picker';
@@ -121,7 +122,9 @@ export default function ChattingRoomPage() {
     <ChattingRoomLayout>
       <ChattingRoomLayout.Header>
         <ChattingRoomLayout.Header.Left>
-          <div onClick={() => navigate(-1)}>
+          <div onClick={() => navigate(
+              GET_ROUTES.nowDarakbang.chat(),
+          )}>
             <Back />
           </div>
         </ChattingRoomLayout.Header.Left>
