@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import lombok.extern.slf4j.Slf4j;
 import mouda.backend.common.config.UrlConfig;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.moim.domain.Comment;
@@ -23,6 +25,7 @@ import mouda.backend.notification.exception.NotificationException;
 import mouda.backend.notification.implement.NotificationProcessor;
 
 @Component
+@Slf4j
 public class CommentNotificationEventHandler extends AbstractMoimRelatedNotificationEventHandler {
 
 	private final CommentRecipientFinder commentRecipientFinder;
@@ -37,6 +40,7 @@ public class CommentNotificationEventHandler extends AbstractMoimRelatedNotifica
 	@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
 	@TransactionalEventListener(classes = CommentNotificationEvent.class, phase = TransactionPhase.AFTER_COMMIT)
 	public void handleCommentNotificationEvent(CommentNotificationEvent event) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
 		Comment comment = event.getComment();
 		DarakbangMember author = event.getAuthor();
 

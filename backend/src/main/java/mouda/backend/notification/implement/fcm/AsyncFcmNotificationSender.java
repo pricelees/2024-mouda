@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -36,6 +37,8 @@ public class AsyncFcmNotificationSender {
 			return;
 		}
 
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		log.info("FCM 요청 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		messages.forEach(multicastMessage -> sendSingleMulticastMessage(notification, multicastMessage, tokens));
 	}
 
@@ -58,8 +61,8 @@ public class AsyncFcmNotificationSender {
 			@Override
 			public void onSuccess(BatchResponse result) {
 				if (result.getFailureCount() == 0) {
-					log.info("All messages were sent successfully. title: {}, body: {}", notification.getTitle(),
-						notification.getBody());
+					String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+					log.info("알림 전송 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 					return;
 				}
 				fcmResponseHandler.handleBatchResponse(result, notification, initialTokens);

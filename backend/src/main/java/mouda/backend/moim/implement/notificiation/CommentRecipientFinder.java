@@ -4,8 +4,10 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.moim.domain.Chamyo;
 import mouda.backend.moim.domain.Comment;
@@ -20,6 +22,7 @@ import mouda.backend.notification.domain.NotificationType;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CommentRecipientFinder {
 
 	private final ChamyoRepository chamyoRepository;
@@ -36,6 +39,7 @@ public class CommentRecipientFinder {
 	// 작성자가 방장인 경우: 아무에게도 알림을 보내지 않음.
 	// 작성자가 방장이 아닌 경우: 방장에게 '댓글' 알림을 보냄.
 	private CommentRecipients getCommentRecipientWhenComment(Comment comment) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
 		CommentRecipients commentRecipients = new CommentRecipients();
 
 		Moim moim = comment.getMoim();
@@ -46,6 +50,7 @@ public class CommentRecipientFinder {
 			commentRecipients.addRecipient(NotificationType.NEW_COMMENT, moimer.getMemberId(), moimer.getId());
 		}
 
+		log.info("댓글 알림 대상자 필터링 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		return commentRecipients;
 	}
 
@@ -58,6 +63,7 @@ public class CommentRecipientFinder {
 	//          -> 원 댓글 작성자가 자신인 경우: 방장에게만 댓글 알림
 	// 			-> 원 댓글 작성자가 방장이 아닌 경우: 원 댓글 작성자에게는 답글 알림, 방장에게는 댓글 알림.
 	private CommentRecipients getCommentRecipientWhenReply(Comment comment) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
 		CommentRecipients commentRecipients = new CommentRecipients();
 
 		Moim moim = comment.getMoim();
@@ -88,6 +94,7 @@ public class CommentRecipientFinder {
 			}
 		}
 
+		log.info("댓글 알림 대상자 필터링 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		return commentRecipients;
 	}
 

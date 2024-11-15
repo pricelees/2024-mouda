@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -39,10 +40,14 @@ public class FcmResponseHandler {
 	public void handleBatchResponse(
 		BatchResponse batchResponse, CommonNotification notification, List<FcmToken> initialTokens
 	) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		log.info("실패한 알림 재전송 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		FcmFailedResponse failedResponse = FcmFailedResponse.from(batchResponse, initialTokens);
 
 		int attempt = 1;
 		retryAsync(notification, failedResponse, attempt, BACKOFF_DELAY_FOR_SECONDS);
+		log.info("실패한 알림 재전송 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
+
 	}
 
 	private void retryAsync(
@@ -66,6 +71,9 @@ public class FcmResponseHandler {
 
 		int retryAfterSeconds = failedResponse.getRetryAfterSeconds();
 		scheduler.schedule(() -> {
+			String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+			log.info("429 토큰 재전송 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
+
 			log.info("Retrying 429 retry for title: {}, body: {}, tokens: {}.", notification.getTitle(),
 				notification.getBody(), failedWith429Tokens);
 
@@ -83,6 +91,8 @@ public class FcmResponseHandler {
 		}
 
 		scheduler.schedule(() -> {
+			String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+			log.info("5xx 토큰 재전송 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 			log.info("Retrying 5xx for title: {}, body: {}, tokens: {}.", notification.getTitle(),
 				notification.getBody(), failedWith5xxTokens);
 			FcmFailedResponse retryResponse = sendNotification(failedResponse, notification, failedWith5xxTokens);
