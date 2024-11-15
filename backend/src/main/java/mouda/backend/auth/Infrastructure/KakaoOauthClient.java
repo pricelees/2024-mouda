@@ -48,7 +48,6 @@ public class KakaoOauthClient {
 		} catch (Exception e) {
 			throw new AuthException(HttpStatus.BAD_GATEWAY, AuthErrorMessage.KAKAO_UNAUTHORIZED);
 		}
-
 	}
 
 	private HttpHeaders getHttpHeaders() {

@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.firebase.FirebaseException;
 
@@ -21,7 +22,6 @@ import mouda.backend.notification.infrastructure.MemberNotificationRepository;
 import mouda.backend.notification.presentation.request.FcmTokenSaveRequest;
 import mouda.backend.notification.presentation.response.NotificationFindAllResponse;
 import mouda.backend.notification.presentation.response.NotificationFindAllResponses;
-import mouda.backend.notification.service.FcmService;
 import mouda.backend.notification.service.NotificationFactory;
 
 @Slf4j
@@ -42,11 +42,16 @@ public class NotificationService {
 
 	public void notifyToMember(NotificationType type, Long darakbangId, Moim moim,
 		DarakbangMember sender, long recipientId) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		long start = System.currentTimeMillis();
 		MoudaNotification notification = notificationFactory.getStrategy(type)
 			.buildNotification(darakbangId, moim, sender);
 
 		List<String> tokens = fcmTokenRepository.findAllTokenByMemberId(recipientId);
 		fcmService.sendNotification(notification, tokens);
+		long end = System.currentTimeMillis();
+		log.info("알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName,
+			end - start, Thread.currentThread().getName());
 	}
 
 	public void notifyToAllMembers(NotificationType type, Long darakbangId, Moim moim,
@@ -89,6 +94,8 @@ public class NotificationService {
 
 	public void notifyToMembers(NotificationType type, Long darakbangId, Moim moim,
 		DarakbangMember sender) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		long start = System.currentTimeMillis();
 		MoudaNotification notification = notificationFactory.getStrategy(type)
 			.buildNotification(darakbangId, moim, sender);
 		List<Long> recipients = recipientFactory.getStrategy(type)
@@ -96,6 +103,9 @@ public class NotificationService {
 
 		List<String> tokens = fcmTokenRepository.findAllTokenByMemberIds(recipients);
 		fcmService.sendNotification(notification, tokens);
+		long end = System.currentTimeMillis();
+		log.info("알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName,
+			end - start, Thread.currentThread().getName());
 	}
 
 	public NotificationFindAllResponses findAllMyNotifications(Member member, Long darakbangId) {

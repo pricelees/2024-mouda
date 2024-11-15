@@ -1,4 +1,4 @@
-package mouda.backend.notification.service;
+package mouda.backend.notification.business;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -31,6 +32,8 @@ public class FcmService {
 	private final FcmTokenRepository fcmTokenRepository;
 
 	public void sendNotification(MoudaNotification notification, List<String> tokens) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		long start = System.currentTimeMillis();
 		if (tokens.isEmpty()) {
 			return;
 		}
@@ -51,6 +54,9 @@ public class FcmService {
 					log.error("Failed to send message: {}", e.getMessage());
 				}
 			});
+		long end = System.currentTimeMillis();
+		log.info("FCM 요청 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName,
+			end - start, Thread.currentThread().getName());
 	}
 
 	private List<List<String>> chunkFcmTokensForMulticast(List<String> tokens) {

@@ -5,8 +5,10 @@ import java.util.function.Predicate;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.moim.domain.Chamyo;
 import mouda.backend.moim.domain.FilterType;
@@ -21,6 +23,7 @@ import mouda.backend.moim.infrastructure.ZzimRepository;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class MoimFinder {
 
 	private final MoimRepository moimRepository;
@@ -29,6 +32,8 @@ public class MoimFinder {
 	private final ZzimRepository zzimRepository;
 
 	public Moim read(long moimId, long currentDarakbangId) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		log.info("모임 조회. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		return moimRepository.findByIdAndDarakbangId(moimId, currentDarakbangId)
 			.orElseThrow(() -> new MoimException(HttpStatus.NOT_FOUND, MoimErrorMessage.NOT_FOUND));
 	}
