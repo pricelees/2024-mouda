@@ -3,6 +3,7 @@ package mouda.backend.moim.implement.sender;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -31,6 +32,7 @@ public class CommentNotificationSender extends AbstractMoimNotificationSender {
 		this.eventPublisher = eventPublisher;
 	}
 
+	@Async
 	public void sendCommentNotification(Comment comment, DarakbangMember author) {
 		List<CommentRecipient> commentRecipients = commentRecipientFinder.getAllRecipient(comment);
 

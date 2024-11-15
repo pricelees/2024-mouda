@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -38,6 +39,7 @@ public class FcmNotificationSender implements NotificationSender {
 	private final FcmResponseHandler fcmResponseHandler;
 	private final FcmTokenWriter fcmTokenWriter;
 
+	@Async
 	@Override
 	public void sendNotification(CommonNotification notification, List<Recipient> recipients) {
 		List<String> tokens = fcmTokenFinder.findAllTokensByMember(recipients);

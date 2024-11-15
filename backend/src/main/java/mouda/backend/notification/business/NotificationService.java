@@ -2,6 +2,7 @@ package mouda.backend.notification.business;
 
 import java.util.List;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class NotificationService {
 	private final SubscriptionFilterRegistry subscriptionFilterRegistry;
 	private final NotificationSender notificationSender;
 
+	@Async
 	@TransactionalEventListener(classes = NotificationEvent.class, phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void sendNotification(NotificationEvent notificationEvent) {
