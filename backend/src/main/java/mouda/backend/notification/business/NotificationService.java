@@ -51,8 +51,7 @@ public class NotificationService {
 		List<String> tokens = fcmTokenRepository.findAllTokenByMemberId(recipientId);
 		fcmService.sendNotification(notification, tokens);
 		long end = System.nanoTime();
-		log.info("알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName,
-			((end - start) / 1_000_000), Thread.currentThread().getName());
+		log.info("알림 전송 완료. 트랜잭션 이름: {},  스레드: {}", transactionName, Thread.currentThread().getName());
 	}
 
 	public void notifyToAllMembers(NotificationType type, Long darakbangId, Moim moim,
@@ -105,8 +104,7 @@ public class NotificationService {
 		List<String> tokens = fcmTokenRepository.findAllTokenByMemberIds(recipients);
 		fcmService.sendNotification(notification, tokens);
 		long end = System.nanoTime();
-		log.info("알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName,
-			((end - start) / 1_000_000), Thread.currentThread().getName());
+		log.info("알림 전송 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 	}
 
 	public NotificationFindAllResponses findAllMyNotifications(Member member, Long darakbangId) {

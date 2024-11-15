@@ -55,8 +55,7 @@ public class FcmService {
 				}
 			});
 		long end = System.nanoTime();
-		log.info("FCM 요청 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName,
-			((end - start) / 1_000_000), Thread.currentThread().getName());
+		log.info("FCM 요청 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 	}
 
 	private List<List<String>> chunkFcmTokensForMulticast(List<String> tokens) {

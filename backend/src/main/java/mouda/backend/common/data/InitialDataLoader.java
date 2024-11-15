@@ -31,7 +31,7 @@ public class InitialDataLoader {
 
 		Darakbang darakbang = darakbangRepository.save(
 			Darakbang.builder()
-				.code("NOTI")
+				.code("NOTI123")
 				.name("알림 테스트")
 				.build()
 		);
