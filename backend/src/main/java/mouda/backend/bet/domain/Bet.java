@@ -49,13 +49,6 @@ public class Bet {
 			.anyMatch(participant -> participant.getId() == id);
 	}
 
-	public long getLoserId() {
-		if (loserId == null) {
-			throw new IllegalArgumentException("당첨자가 존재하지 않습니다.");
-		}
-		return loserId;
-	}
-
 	public boolean isLoser(long otherId) {
 		return loserId == otherId;
 	}
@@ -64,7 +57,15 @@ public class Bet {
 		return betDetails.getId();
 	}
 
+	public String getTitle() {
+		return betDetails.getTitle();
+	}
+
 	public long timeDifferenceInMinutesWithNow() {
 		return betDetails.timeDifferenceInMinutesWithNow();
+	}
+
+	public boolean canNotParticipate() {
+		return hasLoser() || betDetails.pastBettingTime();
 	}
 }

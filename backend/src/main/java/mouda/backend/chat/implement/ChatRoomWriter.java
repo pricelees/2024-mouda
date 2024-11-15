@@ -12,13 +12,16 @@ import mouda.backend.chat.infrastructure.ChatRoomRepository;
 public class ChatRoomWriter {
 
 	private final ChatRoomRepository chatRoomRepository;
+	private final ChatRoomValidator chatRoomValidator;
 
-	public void append(long targetId, long darakbangId, ChatRoomType chatRoomType) {
+	public long append(long targetId, long darakbangId, ChatRoomType chatRoomType) {
+		chatRoomValidator.validateAlreadyExists(targetId, chatRoomType);
+
 		ChatRoomEntity chatRoomEntity = ChatRoomEntity.builder()
 			.targetId(targetId)
 			.darakbangId(darakbangId)
 			.type(chatRoomType)
 			.build();
-		chatRoomRepository.save(chatRoomEntity);
+		return chatRoomRepository.save(chatRoomEntity).getId();
 	}
 }

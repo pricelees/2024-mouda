@@ -5,6 +5,7 @@ import mouda.backend.moim.domain.Chamyo;
 
 @Builder
 public record ChamyoFindAllResponse(
+	long darakbangMemberId,
 	String nickname,
 	String profile,
 	String role
@@ -12,8 +13,9 @@ public record ChamyoFindAllResponse(
 
 	public static ChamyoFindAllResponse toResponse(Chamyo chamyo) {
 		return ChamyoFindAllResponse.builder()
+			.darakbangMemberId(chamyo.getDarakbangMember().getId())
 			.nickname(chamyo.getDarakbangMember().getNickname())
-			.profile("")
+			.profile(chamyo.getDarakbangMember().getProfile())
 			.role(chamyo.getMoimRole().name())
 			.build();
 	}

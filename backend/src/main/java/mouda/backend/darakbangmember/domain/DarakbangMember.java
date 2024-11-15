@@ -19,6 +19,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mouda.backend.chat.domain.Author;
 import mouda.backend.darakbang.domain.Darakbang;
 import mouda.backend.darakbangmember.exception.DarakbangMemberErrorMessage;
 import mouda.backend.darakbangmember.exception.DarakbangMemberException;
@@ -36,7 +37,7 @@ import mouda.backend.darakbangmember.exception.DarakbangMemberException;
 )
 public class DarakbangMember {
 
-	private static final int MAX_LENGTH = 10;
+	private static final int MAX_LENGTH = 12;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -75,7 +76,7 @@ public class DarakbangMember {
 		if (nickname == null || nickname.isBlank()) {
 			throw new DarakbangMemberException(HttpStatus.BAD_REQUEST, DarakbangMemberErrorMessage.NICKNAME_NOT_EXIST);
 		}
-		if (nickname.length() >= MAX_LENGTH) {
+		if (nickname.length() > MAX_LENGTH) {
 			throw new DarakbangMemberException(HttpStatus.BAD_REQUEST, DarakbangMemberErrorMessage.INVALID_LENGTH);
 		}
 	}
@@ -84,7 +85,16 @@ public class DarakbangMember {
 		return role != DarakBangMemberRole.MANAGER;
 	}
 
+	public DarakbangMember updateMyInfo(String nickname, String description) {
+		validateNickname(nickname);
+		this.nickname = nickname;
+		this.description = description;
+
+		return this;
+	}
+
 	public DarakbangMember updateMyInfo(String nickname, String description, String profile) {
+		validateNickname(nickname);
 		this.nickname = nickname;
 		this.description = description;
 		this.profile = profile;
@@ -98,6 +108,19 @@ public class DarakbangMember {
 
 	public boolean isNotSameMemberWith(DarakbangMember other) {
 		return !isSameMemberWith(other);
+	}
+
+	public boolean hasImage() {
+		return profile != null;
+	}
+
+	public Author toAuthor() {
+		return Author.builder()
+			.darakbangMemberId(id)
+			.memberId(memberId)
+			.nickname(nickname)
+			.profile(profile)
+			.build();
 	}
 
 	@Override

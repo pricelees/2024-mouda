@@ -6,7 +6,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -18,17 +17,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mouda.backend.notification.domain.CommonNotification;
 import mouda.backend.notification.domain.FcmFailedResponse;
+import mouda.backend.notification.domain.FcmToken;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class FcmResponseHandler {
 
-	private static final int MAX_ATTEMPT = 3;
 	private static final int BACKOFF_DELAY_FOR_SECONDS = 10;
 	private static final int BACKOFF_MULTIPLIER = 1;
 
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
+	private final FcmRetryableChecker fcmRetryableChecker;
 	private final FcmMessageFactory fcmMessageFactory;
 
 	@PreDestroy
@@ -36,68 +36,72 @@ public class FcmResponseHandler {
 		scheduler.shutdown();
 	}
 
-	public void handleBatchResponse(BatchResponse batchResponse, CommonNotification notification,
-		List<String> initialTokens) {
-		String transactionName = Thread.currentThread().getName();
-		log.info("알림 재전송 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
+	public void handleBatchResponse(
+		BatchResponse batchResponse, CommonNotification notification, List<FcmToken> initialTokens
+	) {
 		FcmFailedResponse failedResponse = FcmFailedResponse.from(batchResponse, initialTokens);
 
 		int attempt = 1;
 		retryAsync(notification, failedResponse, attempt, BACKOFF_DELAY_FOR_SECONDS);
-		log.info("알림 재전송 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 	}
 
-	private void retryAsync(CommonNotification notification, FcmFailedResponse failedResponse, int attempt,
-		int backoffDelayForSeconds) {
-		if (attempt > MAX_ATTEMPT) {
-			log.info("Max attempt reached for notification: {}. failed: {}", notification.getBody(),
-				failedResponse.getFinallyFailedTokens());
-			return;
-		}
+	private void retryAsync(
+		CommonNotification notification, FcmFailedResponse failedResponse, int attempt, int backoffDelayForSeconds
+	) {
+		boolean canRetry = fcmRetryableChecker.check(notification, failedResponse, attempt);
 
-		if (failedResponse.hasNoRetryableTokens()) {
-			log.info("No Retryable tokens for notification: {}. failed: {}.", notification.getBody(),
-				failedResponse.getNonRetryableFailedTokens());
-			return;
-		}
-
-		if (failedResponse.hasFailedWith429Tokens()) {
-			int retryAfterSeconds = failedResponse.getRetryAfterSeconds();
-			scheduler.schedule(() -> {
-				log.info("429 토큰 재전송 시작. 트랜잭션 이름: {}, 스레드: {}",
-					TransactionSynchronizationManager.getCurrentTransactionName(), Thread.currentThread().getName());
-				log.info("Retrying 429 for notification: {}. Thread: {}", notification.getTitle(),
-					Thread.currentThread().getName());
-				FcmFailedResponse retryResponse = retry(failedResponse, notification,
-					failedResponse.getFailedWith429Tokens());
-				retryAsync(notification, retryResponse, attempt + 1, backoffDelayForSeconds * BACKOFF_MULTIPLIER);
-			}, retryAfterSeconds, TimeUnit.SECONDS);
-		}
-
-		if (failedResponse.hasFailedWith5xxTokens()) {
-			scheduler.schedule(() -> {
-				log.info("5xx 토큰 재전송 시작. 트랜잭션 이름: {}, 스레드: {}",
-					TransactionSynchronizationManager.getCurrentTransactionName(), Thread.currentThread().getName());
-				log.info("Retrying 5xx for notification: {}. Thread: {}", notification.getTitle(),
-					Thread.currentThread().getName());
-				FcmFailedResponse retryResponse = retry(failedResponse, notification,
-					failedResponse.getFailedWith5xxTokens());
-				retryAsync(notification, retryResponse, attempt + 1, backoffDelayForSeconds * BACKOFF_MULTIPLIER);
-			}, backoffDelayForSeconds, TimeUnit.SECONDS);
+		if (canRetry) {
+			retryUsingRetryAfter(notification, failedResponse, attempt, backoffDelayForSeconds);
+			retryUsingBackoff(notification, failedResponse, attempt, backoffDelayForSeconds);
 		}
 	}
 
-	private FcmFailedResponse retry(FcmFailedResponse origin, CommonNotification notification,
-		List<String> retryTokens) {
-		log.info("Retrying for notification: {}. failed: {}, Thread: {}", notification.getTitle(), retryTokens,
-			Thread.currentThread().getName());
-		MulticastMessage message = fcmMessageFactory.createMessage(notification, retryTokens).get(0);
+	private void retryUsingRetryAfter(
+		CommonNotification notification, FcmFailedResponse failedResponse, int attempt, int backOffDelayForSeconds
+	) {
+		List<FcmToken> failedWith429Tokens = failedResponse.getFailedWith429Tokens();
+		if (failedWith429Tokens.isEmpty()) {
+			return;
+		}
+
+		int retryAfterSeconds = failedResponse.getRetryAfterSeconds();
+		scheduler.schedule(() -> {
+			log.info("Retrying 429 retry for title: {}, body: {}, tokens: {}.", notification.getTitle(),
+				notification.getBody(), failedWith429Tokens);
+
+			FcmFailedResponse retryResponse = sendNotification(failedResponse, notification, failedWith429Tokens);
+			retryAsync(notification, retryResponse, attempt + 1, backOffDelayForSeconds * BACKOFF_MULTIPLIER);
+		}, retryAfterSeconds, TimeUnit.SECONDS);
+	}
+
+	private void retryUsingBackoff(
+		CommonNotification notification, FcmFailedResponse failedResponse, int attempt, int backoffDelayForSeconds
+	) {
+		List<FcmToken> failedWith5xxTokens = failedResponse.getFailedWith5xxTokens();
+		if (failedWith5xxTokens.isEmpty()) {
+			return;
+		}
+
+		scheduler.schedule(() -> {
+			log.info("Retrying 5xx for title: {}, body: {}, tokens: {}.", notification.getTitle(),
+				notification.getBody(), failedWith5xxTokens);
+			FcmFailedResponse retryResponse = sendNotification(failedResponse, notification, failedWith5xxTokens);
+			retryAsync(notification, retryResponse, attempt + 1, backoffDelayForSeconds * BACKOFF_MULTIPLIER);
+		}, backoffDelayForSeconds, TimeUnit.SECONDS);
+	}
+
+	private FcmFailedResponse sendNotification(
+		FcmFailedResponse origin, CommonNotification notification, List<FcmToken> retryTokens
+	) {
+		List<String> tokens = retryTokens.stream().map(FcmToken::getToken).toList();
+		MulticastMessage message = fcmMessageFactory.createMessage(notification, tokens).get(0);
 
 		try {
 			BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
 			return FcmFailedResponse.from(response, retryTokens);
 		} catch (FirebaseMessagingException e) {
-			log.error("Error Sending Message. error message: {}", e.getMessage());
+			log.error("Error Sending Message while retrying.. title: {}, body: {}, error message: {}",
+				notification.getTitle(), notification.getBody(), e.getMessage());
 			return origin;
 		}
 	}
