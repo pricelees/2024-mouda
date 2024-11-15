@@ -12,11 +12,11 @@ import mouda.backend.moim.domain.Moim;
 import mouda.backend.moim.domain.MoimRole;
 import mouda.backend.moim.implement.finder.ChamyoFinder;
 import mouda.backend.moim.implement.finder.MoimFinder;
+import mouda.backend.moim.implement.sender.ChamyoNotificationSender;
 import mouda.backend.moim.implement.writer.ChamyoWriter;
 import mouda.backend.moim.implement.writer.MoimWriter;
 import mouda.backend.moim.presentation.response.chamyo.ChamyoFindAllResponses;
 import mouda.backend.moim.presentation.response.chamyo.MoimRoleFindResponse;
-import mouda.backend.notification.business.NotificationService;
 import mouda.backend.notification.domain.NotificationType;
 
 @Service
@@ -28,7 +28,7 @@ public class ChamyoService {
 	private final MoimWriter moimWriter;
 	private final ChamyoFinder chamyoFinder;
 	private final ChamyoWriter chamyoWriter;
-	private final NotificationService notificationService;
+	private final ChamyoNotificationSender chamyoNotificationSender;
 
 	@Transactional(readOnly = true)
 	public MoimRoleFindResponse findMoimRole(Long darakbangId, Long moimId, DarakbangMember darakbangMember) {
@@ -40,28 +40,25 @@ public class ChamyoService {
 
 	@Transactional(readOnly = true)
 	public ChamyoFindAllResponses findAllChamyo(Long darakbangId, Long moimId) {
-		List<Chamyo> chamyos = chamyoFinder.readAll(moimId, darakbangId);
+		Moim moim = moimFinder.read(moimId, darakbangId);
+		List<Chamyo> chamyos = chamyoFinder.readAll(moim);
 
 		return ChamyoFindAllResponses.toResponse(chamyos);
 	}
 
 	public void chamyoMoim(Long darakbangId, Long moimId, DarakbangMember darakbangMember) {
 		Moim moim = moimFinder.read(moimId, darakbangId);
-		chamyoWriter.saveAsMoimee(moim, darakbangMember);
+		Chamyo chamyo = chamyoWriter.saveAsMoimee(moim, darakbangMember);
+		moimWriter.updateMoimStatusIfFull(moim);
 
-		notificationService.notifyToMembers(NotificationType.NEW_MOIMEE_JOINED, darakbangId, moim, darakbangMember);
+		chamyoNotificationSender.sendChamyoNotification(moimId, darakbangMember, NotificationType.NEW_MOIMEE_JOINED);
 	}
 
 	public void cancelChamyo(Long darakbangId, Long moimId, DarakbangMember darakbangMember) {
 		Moim moim = moimFinder.read(moimId, darakbangId);
-		chamyoWriter.delete(moim, darakbangMember);
+		Chamyo chamyo = chamyoFinder.read(moim, darakbangMember);
+		chamyoWriter.delete(chamyo);
 
-		sendCancelNotification(darakbangId, darakbangMember, moim);
-	}
-
-	private void sendCancelNotification(Long darakbangId, DarakbangMember darakbangMember, Moim moim) {
-		if (moim.isCompleted()) {
-			notificationService.notifyToMembers(NotificationType.MOIMEE_LEFT, darakbangId, moim, darakbangMember);
-		}
+		chamyoNotificationSender.sendChamyoNotification(moimId, darakbangMember, NotificationType.MOIMEE_LEFT);
 	}
 }

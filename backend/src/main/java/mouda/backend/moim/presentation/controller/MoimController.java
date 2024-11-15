@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServlet;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mouda.backend.common.config.argumentresolver.LoginDarakbangMember;
@@ -42,9 +41,9 @@ public class MoimController implements MoimSwagger {
 		@LoginDarakbangMember DarakbangMember member,
 		@Valid @RequestBody MoimCreateRequest moimCreateRequest
 	) {
-		Long moimId = moimService.createMoim(darakbangId, member, moimCreateRequest);
+		Moim moim = moimService.createMoim(darakbangId, member, moimCreateRequest);
 
-		return ResponseEntity.ok().body(new RestResponse<>(moimId));
+		return ResponseEntity.ok().body(new RestResponse<>(moim.getId()));
 	}
 
 	@Override

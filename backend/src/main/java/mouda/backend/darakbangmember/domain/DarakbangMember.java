@@ -1,5 +1,7 @@
 package mouda.backend.darakbangmember.domain;
 
+import java.util.Objects;
+
 import org.springframework.http.HttpStatus;
 
 import jakarta.persistence.Column;
@@ -34,6 +36,7 @@ import mouda.backend.darakbangmember.exception.DarakbangMemberException;
 )
 public class DarakbangMember {
 
+	private static final int MAX_LENGTH = 10;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -48,16 +51,23 @@ public class DarakbangMember {
 	@Column(nullable = false)
 	private String nickname;
 
+	private String profile;
+
+	private String description;
+
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private DarakBangMemberRole role;
 
 	@Builder
-	public DarakbangMember(Darakbang darakbang, Long memberId, String nickname, DarakBangMemberRole role) {
+	public DarakbangMember(Darakbang darakbang, Long memberId, String nickname, String profile, String description,
+		DarakBangMemberRole role) {
 		validateNickname(nickname);
 		this.darakbang = darakbang;
 		this.memberId = memberId;
 		this.nickname = nickname;
+		this.profile = profile;
+		this.description = description;
 		this.role = role;
 	}
 
@@ -65,13 +75,43 @@ public class DarakbangMember {
 		if (nickname == null || nickname.isBlank()) {
 			throw new DarakbangMemberException(HttpStatus.BAD_REQUEST, DarakbangMemberErrorMessage.NICKNAME_NOT_EXIST);
 		}
+		if (nickname.length() >= MAX_LENGTH) {
+			throw new DarakbangMemberException(HttpStatus.BAD_REQUEST, DarakbangMemberErrorMessage.INVALID_LENGTH);
+		}
 	}
 
 	public boolean isNotManager() {
 		return role != DarakBangMemberRole.MANAGER;
 	}
 
-	public String getDarakbangName() {
-		return darakbang.getName();
+	public DarakbangMember updateMyInfo(String nickname, String description, String profile) {
+		this.nickname = nickname;
+		this.description = description;
+		this.profile = profile;
+
+		return this;
+	}
+
+	public boolean isSameMemberWith(DarakbangMember other) {
+		return id.equals(other.getId());
+	}
+
+	public boolean isNotSameMemberWith(DarakbangMember other) {
+		return !isSameMemberWith(other);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		DarakbangMember that = (DarakbangMember)o;
+		return Objects.equals(id, that.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(id);
 	}
 }

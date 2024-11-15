@@ -1,7 +1,7 @@
 package mouda.backend.moim.infrastructure;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +16,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 	Long findMemberIdByParentId(@Param("parentId") long parentId);
 
 	List<Comment> findAllByMoimOrderByCreatedAt(Moim moim);
+
+	@Query("SELECT c FROM Comment c WHERE c.id = :parentId")
+	Optional<Comment> findParentCommentByParentId(@Param("parentId") Long parentId);
 }

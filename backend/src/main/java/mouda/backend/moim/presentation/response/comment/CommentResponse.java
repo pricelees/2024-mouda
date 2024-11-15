@@ -22,19 +22,6 @@ public record CommentResponse(
 
 	List<ChildCommentResponse> children
 ) {
-	public static CommentResponse toResponse(Comment parentComment, List<Comment> childComments) {
-		List<ChildCommentResponse> children = childComments.stream()
-			.map(ChildCommentResponse::toResponse)
-			.toList();
-
-		return CommentResponse.builder()
-			.commentId(parentComment.getId())
-			.nickname(parentComment.getAuthorNickname())
-			.content(parentComment.getContent())
-			.dateTime(parentComment.getCreatedAt())
-			.children(children)
-			.build();
-	}
 
 	public static CommentResponse fromParentComment(ParentComment parentComment) {
 		List<ChildCommentResponse> children = parentComment.getChildren().stream()

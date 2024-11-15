@@ -22,7 +22,9 @@ spring:
 
 oauth:
   kakao:
-    redirect-uri: http://localhost:8081/kakao-o-auth
-
-url:
-  base: http://localhost:8081
+    redirect-uri: http://localhost:8081/oauth/kakao
+  google:
+    client-secret: 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
+    redirect-uri: http://localhost:8081/oauth/google
+  apple:
+    redirect-uri: https://api.dev.mouda.site/oauth/apple

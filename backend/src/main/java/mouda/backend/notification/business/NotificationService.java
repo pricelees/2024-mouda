@@ -1,123 +1,39 @@
 package mouda.backend.notification.business;
 
 import java.util.List;
-import java.util.Objects;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import com.google.firebase.FirebaseException;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import mouda.backend.darakbangmember.domain.DarakbangMember;
-import mouda.backend.member.domain.Member;
-import mouda.backend.moim.domain.Moim;
-import mouda.backend.notification.domain.MemberNotification;
-import mouda.backend.notification.domain.MoudaNotification;
-import mouda.backend.notification.domain.NotificationType;
-import mouda.backend.notification.infrastructure.FcmTokenRepository;
-import mouda.backend.notification.infrastructure.MemberNotificationRepository;
-import mouda.backend.notification.presentation.request.FcmTokenSaveRequest;
-import mouda.backend.notification.presentation.response.NotificationFindAllResponse;
-import mouda.backend.notification.presentation.response.NotificationFindAllResponses;
-import mouda.backend.notification.service.NotificationFactory;
+import mouda.backend.notification.domain.CommonNotification;
+import mouda.backend.notification.domain.NotificationEvent;
+import mouda.backend.notification.domain.Recipient;
+import mouda.backend.notification.implement.NotificationSender;
+import mouda.backend.notification.implement.NotificationWriter;
+import mouda.backend.notification.implement.filter.SubscriptionFilter;
+import mouda.backend.notification.implement.filter.SubscriptionFilterRegistry;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(noRollbackFor = FirebaseException.class)
 public class NotificationService {
 
-	private final NotificationFactory notificationFactory;
-	private final RecipientFactory recipientFactory;
-	private final FcmService fcmService;
-	private final MemberNotificationRepository memberNotificationRepository;
-	private final FcmTokenRepository fcmTokenRepository;
+	private final NotificationWriter notificationWriter;
+	private final SubscriptionFilterRegistry subscriptionFilterRegistry;
+	private final NotificationSender notificationSender;
 
-	public void registerFcmToken(long memberId, FcmTokenSaveRequest fcmTokenSaveRequest) {
-		fcmService.registerToken(memberId, fcmTokenSaveRequest.token());
-	}
+	@TransactionalEventListener(classes = NotificationEvent.class, phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void sendNotification(NotificationEvent notificationEvent) {
+		CommonNotification commonNotification = notificationEvent.toCommonNotification();
+		notificationWriter.saveAllMemberNotification(commonNotification, notificationEvent.getRecipients());
 
+		SubscriptionFilter subscriptionFilter = subscriptionFilterRegistry.getFilter(notificationEvent.getNotificationType());
+		List<Recipient> filteredRecipients = subscriptionFilter.filter(notificationEvent);
 
-	public void notifyToMember(NotificationType type, Long darakbangId, Moim moim,
-		DarakbangMember sender, long recipientId) {
-		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-		MoudaNotification notification = notificationFactory.getStrategy(type)
-			.buildNotification(darakbangId, moim, sender);
-
-		memberNotificationRepository.save(MemberNotification.builder()
-			.memberId(recipientId)
-			.darakbangId(darakbangId)
-			.moudaNotification(notification)
-			.build());
-		log.info("회원별 알림 저장 완료. 트랜잭션 이름: {},  스레드: {}", transactionName, Thread.currentThread().getName());
-
-		List<String> tokens = fcmTokenRepository.findAllTokenByMemberId(recipientId);
-		fcmService.sendNotification(notification, tokens);
-		log.info("알림 전송 완료. 트랜잭션 이름: {},  스레드: {}", transactionName, Thread.currentThread().getName());
-	}
-
-	public void notifyToAllMembers(NotificationType type, Long darakbangId, Moim moim,
-		DarakbangMember sender) {
-		MoudaNotification notification = notificationFactory.getStrategy(type)
-			.buildNotification(darakbangId, moim, sender);
-
-		List<Long> recipients = fcmTokenRepository.findAllMemberId();
-		List<String> tokens = fcmTokenRepository.findAllTokenByMemberIds(recipients);
-
-		fcmService.sendNotification(notification, tokens);
-	}
-
-	public void notifyToAllExceptMember(NotificationType type, Long darakbangId, Moim moim,
-		DarakbangMember sender, Long exceptMemberId) {
-		MoudaNotification notification = notificationFactory.getStrategy(type)
-			.buildNotification(darakbangId, moim, sender);
-
-		List<Long> recipients = fcmTokenRepository.findAllMemberId().stream()
-			.filter(memberId -> !Objects.equals(memberId, exceptMemberId))
-			.toList();
-		List<String> tokens = fcmTokenRepository.findAllTokenByMemberIds(recipients);
-
-		fcmService.sendNotification(notification, tokens);
-	}
-
-	public void notifyToAllExceptMember(NotificationType type, Long darakbangId, Moim moim,
-		DarakbangMember sender, List<Long> exceptMemberIds
-	) {
-		MoudaNotification notification = notificationFactory.getStrategy(type)
-			.buildNotification(darakbangId, moim, sender);
-
-		List<Long> recipients = fcmTokenRepository.findAllMemberId().stream()
-			.filter(memberId -> !exceptMemberIds.contains(memberId))
-			.toList();
-		List<String> tokens = fcmTokenRepository.findAllTokenByMemberIds(recipients);
-
-		fcmService.sendNotification(notification, tokens);
-	}
-
-	public void notifyToMembers(NotificationType type, Long darakbangId, Moim moim,
-		DarakbangMember sender) {
-		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-		MoudaNotification notification = notificationFactory.getStrategy(type)
-			.buildNotification(darakbangId, moim, sender);
-		List<Long> recipients = recipientFactory.getStrategy(type)
-			.resolveRecipients(darakbangId, notification, moim, sender);
-
-		List<String> tokens = fcmTokenRepository.findAllTokenByMemberIds(recipients);
-		fcmService.sendNotification(notification, tokens);
-		log.info("알림 전송 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
-	}
-
-	public NotificationFindAllResponses findAllMyNotifications(Member member, Long darakbangId) {
-		List<NotificationFindAllResponse> responses = memberNotificationRepository.findAllByMemberIdAndDarakbangIdOrderByIdDesc(
-				member.getId(), darakbangId)
-			.stream()
-			.map(MemberNotification::getMoudaNotification)
-			.map(NotificationFindAllResponse::from)
-			.toList();
-
-		return new NotificationFindAllResponses(responses);
+		notificationSender.sendNotification(commonNotification, filteredRecipients);
 	}
 }

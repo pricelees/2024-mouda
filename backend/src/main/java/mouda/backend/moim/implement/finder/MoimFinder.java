@@ -5,16 +5,15 @@ import java.util.function.Predicate;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import mouda.backend.chat.implement.ChatRoomFinder;
+import mouda.backend.chat.infrastructure.ChatRoomRepository;
 import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.moim.domain.Chamyo;
 import mouda.backend.moim.domain.FilterType;
 import mouda.backend.moim.domain.Moim;
-import mouda.backend.moim.domain.MoimWithZzim;
-import mouda.backend.moim.domain.Zzim;
+import mouda.backend.moim.domain.MoimOverview;
 import mouda.backend.moim.exception.MoimErrorMessage;
 import mouda.backend.moim.exception.MoimException;
 import mouda.backend.moim.infrastructure.ChamyoRepository;
@@ -23,38 +22,36 @@ import mouda.backend.moim.infrastructure.ZzimRepository;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class MoimFinder {
 
 	private final MoimRepository moimRepository;
 	private final ChamyoRepository chamyoRepository;
 	private final ZzimFinder zzimFinder;
 	private final ZzimRepository zzimRepository;
+	private final ChatRoomRepository chatRoomRepository;
+	private final ChatRoomFinder chatRoomFinder;
+	private final ChamyoFinder chamyoFinder;
 
 	public Moim read(long moimId, long currentDarakbangId) {
-		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-		log.info("모임 조회. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		return moimRepository.findByIdAndDarakbangId(moimId, currentDarakbangId)
 			.orElseThrow(() -> new MoimException(HttpStatus.NOT_FOUND, MoimErrorMessage.NOT_FOUND));
 	}
 
-	public List<MoimWithZzim> readAll(long darakbangId, DarakbangMember darakbangMember) {
-		List<Moim> moims = moimRepository.findAllByDarakbangIdOrderByIdDesc(darakbangId);
-		return parseToMoimWithZzim(moims, darakbangMember);
-	}
-
-	public List<MoimWithZzim> readAllMyMoim(DarakbangMember darakbangMember, FilterType filterType) {
-		Predicate<Moim> filterPredicate = getMoimFilterPredicate(filterType);
-		System.out.println("filterPredicate = " + filterPredicate);
-		List<Moim> moims = chamyoRepository.findAllByDarakbangMemberIdOrderByIdDesc(darakbangMember.getId()).stream()
-			.map(Chamyo::getMoim)
-			.filter(filterPredicate)
+	public List<MoimOverview> readAll(long darakbangId, DarakbangMember darakbangMember) {
+		return moimRepository.findAllByDarakbangIdOrderByIdDesc(darakbangId).stream()
+			.map(moim -> createMoimOverview(moim, darakbangMember))
 			.toList();
-
-		return parseToMoimWithZzim(moims, darakbangMember);
 	}
 
-	private Predicate<Moim> getMoimFilterPredicate(FilterType filterType) {
+	public List<MoimOverview> readAllMyMoim(DarakbangMember darakbangMember, FilterType filterType) {
+		return chamyoRepository.findAllByDarakbangMemberIdOrderByIdDesc(darakbangMember.getId()).stream()
+			.map(Chamyo::getMoim)
+			.filter(getFilter(filterType))
+			.map(moim -> createMoimOverview(moim, darakbangMember))
+			.toList();
+	}
+
+	private Predicate<Moim> getFilter(FilterType filterType) {
 		if (filterType == FilterType.PAST) {
 			return Moim::isPastMoim;
 		}
@@ -64,25 +61,27 @@ public class MoimFinder {
 		return moim -> true;
 	}
 
-	public List<MoimWithZzim> readAllZzimedMoim(DarakbangMember darakbangMember) {
-		List<Moim> moims = zzimRepository.findAllByDarakbangMemberIdOrderByIdDesc(darakbangMember.getId())
-			.stream().map(Zzim::getMoim).toList();
-
-		return parseToMoimWithZzim(moims, darakbangMember);
+	public List<MoimOverview> readAllZzimedMoim(DarakbangMember darakbangMember) {
+		return zzimRepository.findAllByDarakbangMemberIdOrderByIdDesc(darakbangMember.getId()).stream()
+			.map(zzim -> createMoimOverview(zzim.getMoim(), darakbangMember))
+			.toList();
 	}
 
-	private List<MoimWithZzim> parseToMoimWithZzim(List<Moim> moims, DarakbangMember darakbangMember) {
-		return moims.stream()
-			.map(moim -> MoimWithZzim.builder()
-				.moim(moim)
-				.currentPeople(countCurrentPeople(moim))
-				.isZzimed(zzimFinder.isMoimZzimedByMember(moim.getId(), darakbangMember))
-				.build()
-			)
-			.toList();
+	private MoimOverview createMoimOverview(Moim moim, DarakbangMember darakbangMember) {
+		int currentPeople = countCurrentPeople(moim);
+		boolean isZzimed = zzimFinder.isMoimZzimedByMember(moim.getId(), darakbangMember);
+
+		return new MoimOverview(moim, currentPeople, isZzimed);
 	}
 
 	public int countCurrentPeople(Moim moim) {
 		return chamyoRepository.countByMoim(moim);
+	}
+
+	public List<Moim> readAllMyMoims(DarakbangMember darakbangMember) {
+		return chamyoRepository.findAllByDarakbangMemberIdOrderByIdDesc(darakbangMember.getId())
+			.stream()
+			.map(Chamyo::getMoim)
+			.toList();
 	}
 }
