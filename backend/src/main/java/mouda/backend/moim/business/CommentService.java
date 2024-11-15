@@ -35,6 +35,6 @@ public class CommentService {
 
 		commentNotificationSender.sendCommentNotification(comment, darakbangMember);
 		long end = System.nanoTime();
-		log.info("댓글 작성 및 알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName, ((end - start) / 1_000_000) , Thread.currentThread().getName());
+		log.info("댓글 작성 및 알림 전송 요청 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName, ((end - start) / 1_000_000) , Thread.currentThread().getName());
 	}
 }
