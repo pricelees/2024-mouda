@@ -20,7 +20,7 @@ import mouda.backend.auth.presentation.response.OauthResponse;
 @RequiredArgsConstructor
 public class KakaoOauthClient implements OauthClient {
 
-	public static final String CLIENT_ID = "ca3adf9a52671fdbb847b809c0fdb980";
+	public static final String CLIENT_ID = "ce2dc008ea50dcb2a5bc24b450e877e4";
 	public static final String GRANT_TYPE = "authorization_code";
 	private static final String KAKAO_API_URL = "https://kauth.kakao.com/oauth/token";
 
