@@ -33,18 +33,21 @@ public class CommentService {
 		Long darakbangId, Long moimId, DarakbangMember darakbangMember, CommentCreateRequest request
 	) {
 		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		log.info("댓글 추가 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		long start = System.nanoTime();
 		Moim moim = moimFinder.read(moimId, darakbangId);
 		commentWriter.saveComment(moim, darakbangMember, request.parentId(), request.content());
 
 		sendCommentNotification(moim, darakbangMember, request.parentId(), darakbangId);
 		long end = System.nanoTime();
-		log.info("댓글 작성 및 알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName, ((end - start) / 1_000_000) , Thread.currentThread().getName());
+		log.info("댓글 추가 및 알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName, ((end - start) / 1_000_000) , Thread.currentThread().getName());
 	}
 
 	private void sendCommentNotification(Moim moim, DarakbangMember author, Long parentId, Long darakbangId) {
 		if (parentId != null) {
 			Long parentCommentAuthorId = commentFinder.readMemberIdByParentId(parentId);
+			log.info("댓글 알림 대상자 필터링 완료. 트랜잭션 이름: {}, 스레드: {}", TransactionSynchronizationManager.getCurrentTransactionName(),
+				Thread.currentThread().getName());
 			if (parentCommentAuthorId.equals(author.getId())) {
 				return;
 			}
@@ -55,6 +58,8 @@ public class CommentService {
 		if (chamyoFinder.readMoimRole(moim, author) == MoimRole.MOIMEE) {
 			return;
 		}
+		log.info("댓글 알림 대상자 필터링 완료. 트랜잭션 이름: {}, 스레드: {}", TransactionSynchronizationManager.getCurrentTransactionName(),
+			Thread.currentThread().getName());
 		notificationService.notifyToMembers(NotificationType.NEW_COMMENT, darakbangId, moim, author);
 	}
 }

@@ -33,6 +33,7 @@ public class FcmService {
 
 	public void sendNotification(MoudaNotification notification, List<String> tokens) {
 		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		log.info("FCM 요청 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		long start = System.nanoTime();
 		if (tokens.isEmpty()) {
 			return;
