@@ -34,8 +34,6 @@ public class CommentNotificationSender extends AbstractMoimNotificationSender {
 		this.eventPublisher = eventPublisher;
 	}
 
-	@Async
-	@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
 	public void sendCommentNotification(Comment comment, DarakbangMember author) {
 		List<CommentRecipient> commentRecipients = commentRecipientFinder.getAllRecipient(comment);
 

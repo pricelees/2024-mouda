@@ -41,8 +41,6 @@ public class FcmNotificationSender implements NotificationSender {
 	private final FcmResponseHandler fcmResponseHandler;
 	private final FcmTokenWriter fcmTokenWriter;
 
-	@Async
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
 	public void sendNotification(CommonNotification notification, List<Recipient> recipients) {
 		List<String> tokens = fcmTokenFinder.findAllTokensByMember(recipients);
@@ -76,7 +74,7 @@ public class FcmNotificationSender implements NotificationSender {
 			public void onSuccess(BatchResponse result) {
 				String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
 				if (result.getFailureCount() == 0) {
-					log.info("알림 전송 성공. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
+					log.info("FCM 요청 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 					return;
 				}
 				List<String> registeredTokens = checkUnregisteredTokensAndDelete(result, initialTokens);

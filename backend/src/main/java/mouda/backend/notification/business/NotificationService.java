@@ -29,7 +29,6 @@ public class NotificationService {
 	private final SubscriptionFilterRegistry subscriptionFilterRegistry;
 	private final NotificationSender notificationSender;
 
-	@Async
 	@TransactionalEventListener(classes = NotificationEvent.class, phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void sendNotification(NotificationEvent notificationEvent) {
