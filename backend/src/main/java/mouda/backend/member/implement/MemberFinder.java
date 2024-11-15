@@ -15,18 +15,8 @@ public class MemberFinder {
 
 	private final MemberRepository memberRepository;
 
-	public Member findBySocialId(String socialId) {
-		return memberRepository.findByLoginDetail_SocialLoginId(socialId)
-			.orElseThrow(() -> new AuthException(HttpStatus.NOT_FOUND, AuthErrorMessage.MEMBER_NOT_FOUND));
-	}
-
-	public Member findByMemberId(long memberId) {
+	public Member find(long memberId) {
 		return memberRepository.findById(memberId)
-			.orElseThrow(() -> new AuthException(HttpStatus.NOT_FOUND, AuthErrorMessage.MEMBER_NOT_FOUND));
-	}
-
-	public Member findByNonce(String nonce) {
-		return memberRepository.findByLoginDetail_Nonce(nonce)
 			.orElseThrow(() -> new AuthException(HttpStatus.NOT_FOUND, AuthErrorMessage.MEMBER_NOT_FOUND));
 	}
 }

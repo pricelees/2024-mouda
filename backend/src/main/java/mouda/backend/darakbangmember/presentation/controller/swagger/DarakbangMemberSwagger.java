@@ -15,7 +15,6 @@ import mouda.backend.darakbangmember.domain.DarakbangMember;
 import mouda.backend.darakbangmember.presentation.response.DarakbangMemberResponses;
 import mouda.backend.darakbangmember.presentation.response.DarakbangMemberRoleResponse;
 import mouda.backend.member.domain.Member;
-import mouda.backend.member.presentation.response.DarakbangMemberInfoResponse;
 
 public interface DarakbangMemberSwagger {
 
@@ -37,13 +36,5 @@ public interface DarakbangMemberSwagger {
 	ResponseEntity<RestResponse<DarakbangMemberRoleResponse>> findDarakbangMemberRole(
 		@PathVariable Long darakbangId,
 		@LoginMember Member member
-	);
-
-	@Operation(summary = "마이페이지 조회", description = "마이페이지에 표시될 내 정보를 조회한다.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "마이페이지 조회 성공!")
-	})
-	ResponseEntity<RestResponse<DarakbangMemberInfoResponse>> findMyInfo(
-		@LoginDarakbangMember DarakbangMember member
 	);
 }

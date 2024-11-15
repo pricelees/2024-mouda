@@ -8,9 +8,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import mouda.backend.auth.business.AuthService;
 import mouda.backend.auth.exception.AuthErrorMessage;
 import mouda.backend.auth.exception.AuthException;
-import mouda.backend.member.business.MemberService;
 
 @Component
 @RequiredArgsConstructor
@@ -18,7 +18,7 @@ public class AuthenticationCheckInterceptor implements HandlerInterceptor {
 
 	private static final String AUTHORIZATION_PREFIX = "Bearer ";
 
-	private final MemberService memberService;
+	private final AuthService authService;
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -33,7 +33,7 @@ public class AuthenticationCheckInterceptor implements HandlerInterceptor {
 		}
 
 		String token = extractToken(authorizationHeader);
-		memberService.checkAuthentication(token);
+		authService.checkAuthentication(token);
 		return true;
 	}
 

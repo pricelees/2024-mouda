@@ -12,9 +12,9 @@ import mouda.backend.auth.exception.AuthException;
 
 public class TokenDecoder {
 
-	public static Map<String, String> parseIdToken(String idToken) {
+	public static Map<String, String> parseKakaoToken(String kakaoIdToken) {
 		try {
-			String[] parts = idToken.split("\\.");
+			String[] parts = kakaoIdToken.split("\\.");
 			if (parts.length != 3) {
 				throw new AuthException(HttpStatus.INTERNAL_SERVER_ERROR, AuthErrorMessage.INVALID_TOKEN);
 			}

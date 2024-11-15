@@ -2,7 +2,6 @@ package mouda.backend.darakbangmember.business;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import mouda.backend.darakbang.domain.Darakbang;
@@ -16,7 +15,6 @@ import mouda.backend.darakbangmember.presentation.response.DarakbangMemberRespon
 import mouda.backend.darakbangmember.presentation.response.DarakbangMemberRoleResponse;
 import mouda.backend.member.domain.Member;
 import mouda.backend.member.implement.MemberFinder;
-import mouda.backend.member.presentation.response.DarakbangMemberInfoResponse;
 
 @Service
 @Transactional
@@ -45,12 +43,5 @@ public class DarakbangMemberService {
 	public DarakbangMember findDarakbangMember(long darakbangId, Member member) {
 		Darakbang darakbang = darakbangFinder.findById(darakbangId);
 		return darakbangMemberFinder.find(darakbang, member);
-	}
-
-	@Transactional(readOnly = true)
-	public DarakbangMemberInfoResponse findMyInfo(DarakbangMember darakbangMember) {
-		Member member = memberFinder.findByMemberId(darakbangMember.getMemberId());
-		return new DarakbangMemberInfoResponse(member.getName(), darakbangMember.getNickname(),
-			darakbangMember.getProfile(), darakbangMember.getDescription());
 	}
 }

@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
 
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,30 +19,20 @@ import mouda.backend.moim.exception.MoimException;
 @NoArgsConstructor
 public class Member {
 
+	private static final int NICKNAME_MAX_LENGTH = 10;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private String name;
+	private String nickname;
 
-	@Embedded
-	private LoginDetail loginDetail;
+	private Long kakaoId;
 
 	@Builder
-	public Member(String name, LoginDetail loginDetail) {
-		this.loginDetail = loginDetail;
-		validateName(name);
-		this.name = name;
-	}
-
-	private void validateName(String name) {
-		if (name.isBlank()) {
-			throw new MoimException(HttpStatus.BAD_REQUEST, MoimErrorMessage.MEMBER_NAME_NOT_EXISTS);
-		}
-	}
-
-	public String getSocialLoginId() {
-		return loginDetail.getSocialLoginId();
+	public Member(String nickname, Long kakaoId) {
+		this.kakaoId = kakaoId;
+		this.nickname = nickname;
 	}
 
 	@Override
