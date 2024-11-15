@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -37,10 +38,13 @@ public class FcmResponseHandler {
 
 	public void handleBatchResponse(BatchResponse batchResponse, CommonNotification notification,
 		List<String> initialTokens) {
+		String transactionName = Thread.currentThread().getName();
+		log.info("알림 재전송 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		FcmFailedResponse failedResponse = FcmFailedResponse.from(batchResponse, initialTokens);
 
 		int attempt = 1;
 		retryAsync(notification, failedResponse, attempt, BACKOFF_DELAY_FOR_SECONDS);
+		log.info("알림 재전송 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 	}
 
 	private void retryAsync(CommonNotification notification, FcmFailedResponse failedResponse, int attempt,
@@ -60,6 +64,8 @@ public class FcmResponseHandler {
 		if (failedResponse.hasFailedWith429Tokens()) {
 			int retryAfterSeconds = failedResponse.getRetryAfterSeconds();
 			scheduler.schedule(() -> {
+				log.info("429 토큰 재전송 시작. 트랜잭션 이름: {}, 스레드: {}",
+					TransactionSynchronizationManager.getCurrentTransactionName(), Thread.currentThread().getName());
 				log.info("Retrying 429 for notification: {}. Thread: {}", notification.getTitle(),
 					Thread.currentThread().getName());
 				FcmFailedResponse retryResponse = retry(failedResponse, notification,
@@ -70,6 +76,8 @@ public class FcmResponseHandler {
 
 		if (failedResponse.hasFailedWith5xxTokens()) {
 			scheduler.schedule(() -> {
+				log.info("5xx 토큰 재전송 시작. 트랜잭션 이름: {}, 스레드: {}",
+					TransactionSynchronizationManager.getCurrentTransactionName(), Thread.currentThread().getName());
 				log.info("Retrying 5xx for notification: {}. Thread: {}", notification.getTitle(),
 					Thread.currentThread().getName());
 				FcmFailedResponse retryResponse = retry(failedResponse, notification,

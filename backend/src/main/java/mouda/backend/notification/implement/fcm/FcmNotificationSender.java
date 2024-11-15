@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -54,6 +55,8 @@ public class FcmNotificationSender implements NotificationSender {
 
 	private void sendMulticastMessage(CommonNotification notification, MulticastMessage message,
 		List<String> initialTokens) {
+		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		log.info("FCM 요청 시작. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		ApiFuture<BatchResponse> future = FirebaseMessaging.getInstance().sendEachForMulticastAsync(message);
 		ApiFutures.addCallback(future, new ApiFutureCallback<>() {
 			@Override
@@ -66,8 +69,9 @@ public class FcmNotificationSender implements NotificationSender {
 
 			@Override
 			public void onSuccess(BatchResponse result) {
+				String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
 				if (result.getFailureCount() == 0) {
-					log.info("All messages were sent successfully. message: {}", notification.getTitle());
+					log.info("알림 전송 성공. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 					return;
 				}
 				List<String> registeredTokens = checkUnregisteredTokensAndDelete(result, initialTokens);
