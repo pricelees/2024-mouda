@@ -1,5 +1,6 @@
 package mouda.backend.notification.domain.recipient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -26,6 +27,12 @@ public class NewCommentNotificationRecipientResolver extends NoneChatRecipientRe
 	@Override
 	public List<Long> resolveRecipients(long darakbangId, MoudaNotification notification, Moim moim,
 		DarakbangMember sender) {
-		return List.of(chamyoRepository.findMoimerIdByMoimId(moim.getId()));
+		List<Long> recipients = new ArrayList<>();
+		Long moimerId = chamyoRepository.findMoimerIdByMoimId(moim.getId());
+		if (moimerId.equals(sender.getMemberId())) {
+			return recipients;
+		}
+		recipients.add(moimerId);
+		return recipients;
 	}
 }

@@ -33,13 +33,13 @@ public class CommentService {
 		Long darakbangId, Long moimId, DarakbangMember darakbangMember, CommentCreateRequest request
 	) {
 		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-		long start = System.currentTimeMillis();
+		long start = System.nanoTime();
 		Moim moim = moimFinder.read(moimId, darakbangId);
 		commentWriter.saveComment(moim, darakbangMember, request.parentId(), request.content());
 
 		sendCommentNotification(moim, darakbangMember, request.parentId(), darakbangId);
-		long end = System.currentTimeMillis();
-		log.info("댓글 작성 및 알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName, end - start, Thread.currentThread().getName());
+		long end = System.nanoTime();
+		log.info("댓글 작성 및 알림 전송 완료. 트랜잭션 이름: {}, 실행 시간: {}ms, 스레드: {}", transactionName, ((end - start) / 1_000_000) , Thread.currentThread().getName());
 	}
 
 	private void sendCommentNotification(Moim moim, DarakbangMember author, Long parentId, Long darakbangId) {

@@ -41,7 +41,7 @@ public class CommentFinder {
 
 	public Long readMemberIdByParentId(Long parentId) {
 		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-		log.info("부모 댓글 작성자 조회 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
+		log.info("부모 댓글 작성자 조회: 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		return commentRepository.findMemberIdByParentId(parentId);
 	}
 }
