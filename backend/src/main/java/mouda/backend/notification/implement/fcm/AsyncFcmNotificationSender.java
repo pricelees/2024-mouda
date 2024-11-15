@@ -62,7 +62,7 @@ public class AsyncFcmNotificationSender {
 			public void onSuccess(BatchResponse result) {
 				if (result.getFailureCount() == 0) {
 					String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-					log.info("알림 전송 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
+					log.info("FCM 요청 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 					return;
 				}
 				fcmResponseHandler.handleBatchResponse(result, notification, initialTokens);

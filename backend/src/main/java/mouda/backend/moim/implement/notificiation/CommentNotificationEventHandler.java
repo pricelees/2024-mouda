@@ -41,6 +41,7 @@ public class CommentNotificationEventHandler extends AbstractMoimRelatedNotifica
 	@TransactionalEventListener(classes = CommentNotificationEvent.class, phase = TransactionPhase.AFTER_COMMIT)
 	public void handleCommentNotificationEvent(CommentNotificationEvent event) {
 		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
+		log.info("댓글 알림 이벤트 수신. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 		Comment comment = event.getComment();
 		DarakbangMember author = event.getAuthor();
 
