@@ -43,15 +43,18 @@ public class CommentService {
 	}
 
 	private void sendCommentNotification(Moim moim, DarakbangMember author, Long parentId, Long darakbangId) {
-		if (chamyoFinder.readMoimRole(moim, author) == MoimRole.MOIMER) {
-			return;
-		}
 		if (parentId != null) {
 			Long parentCommentAuthorId = commentFinder.readMemberIdByParentId(parentId);
+			if (parentCommentAuthorId.equals(author.getId())) {
+				return;
+			}
 			notificationService.notifyToMember(NotificationType.NEW_REPLY, darakbangId, moim, author,
 				parentCommentAuthorId);
 		}
 
+		if (chamyoFinder.readMoimRole(moim, author) == MoimRole.MOIMEE) {
+			return;
+		}
 		notificationService.notifyToMembers(NotificationType.NEW_COMMENT, darakbangId, moim, author);
 	}
 }
