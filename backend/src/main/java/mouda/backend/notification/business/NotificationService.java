@@ -44,13 +44,18 @@ public class NotificationService {
 	public void notifyToMember(NotificationType type, Long darakbangId, Moim moim,
 		DarakbangMember sender, long recipientId) {
 		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-		long start = System.nanoTime();
 		MoudaNotification notification = notificationFactory.getStrategy(type)
 			.buildNotification(darakbangId, moim, sender);
 
+		memberNotificationRepository.save(MemberNotification.builder()
+			.memberId(recipientId)
+			.darakbangId(darakbangId)
+			.moudaNotification(notification)
+			.build());
+		log.info("회원별 알림 저장 완료. 트랜잭션 이름: {},  스레드: {}", transactionName, Thread.currentThread().getName());
+
 		List<String> tokens = fcmTokenRepository.findAllTokenByMemberId(recipientId);
 		fcmService.sendNotification(notification, tokens);
-		long end = System.nanoTime();
 		log.info("알림 전송 완료. 트랜잭션 이름: {},  스레드: {}", transactionName, Thread.currentThread().getName());
 	}
 
@@ -95,7 +100,6 @@ public class NotificationService {
 	public void notifyToMembers(NotificationType type, Long darakbangId, Moim moim,
 		DarakbangMember sender) {
 		String transactionName = TransactionSynchronizationManager.getCurrentTransactionName();
-		long start = System.nanoTime();
 		MoudaNotification notification = notificationFactory.getStrategy(type)
 			.buildNotification(darakbangId, moim, sender);
 		List<Long> recipients = recipientFactory.getStrategy(type)
@@ -103,7 +107,6 @@ public class NotificationService {
 
 		List<String> tokens = fcmTokenRepository.findAllTokenByMemberIds(recipients);
 		fcmService.sendNotification(notification, tokens);
-		long end = System.nanoTime();
 		log.info("알림 전송 완료. 트랜잭션 이름: {}, 스레드: {}", transactionName, Thread.currentThread().getName());
 	}
 
