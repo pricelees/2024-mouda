@@ -7,6 +7,8 @@ import java.util.stream.IntStream;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.api.core.ApiFuture;
@@ -40,6 +42,7 @@ public class FcmNotificationSender implements NotificationSender {
 	private final FcmTokenWriter fcmTokenWriter;
 
 	@Async
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@Override
 	public void sendNotification(CommonNotification notification, List<Recipient> recipients) {
 		List<String> tokens = fcmTokenFinder.findAllTokensByMember(recipients);
