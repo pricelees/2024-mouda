@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,7 @@ public class CommentNotificationSender extends AbstractMoimNotificationSender {
 	}
 
 	@Async
+	@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
 	public void sendCommentNotification(Comment comment, DarakbangMember author) {
 		List<CommentRecipient> commentRecipients = commentRecipientFinder.getAllRecipient(comment);
 
