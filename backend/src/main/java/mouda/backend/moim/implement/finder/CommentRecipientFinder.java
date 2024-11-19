@@ -33,10 +33,7 @@ public class CommentRecipientFinder {
 	private final CommentRepository commentRepository;
 
 	public List<CommentRecipient> getAllRecipient(Comment comment) {
-		if (comment.isComment()) {
-			return getCommentRecipientWhenComment(comment);
-		}
-		return getCommentRecipientWhenReply(comment);
+		throw new CommentException(HttpStatus.INTERNAL_SERVER_ERROR, CommentErrorMessage.INTENTIONAL_ERROR);
 	}
 
 	// 댓글
